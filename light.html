@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumière Défilante</title>
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Material+Icons&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            background-color: black; /* Fond noir */
+            color: rgb(0, 255, 0); /* Texte en vert */
+            font-family: 'Michroma', sans-serif; /* Utilisation de la police Michroma */
+        }
+        .title {
+            margin: 20px 0;
+            position: absolute;
+            top: 0;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .light {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-color: rgb(0, 255, 0); /* Lumière verte par défaut */
+            border-radius: 50%;
+            top: 50%;
+            left: 0; /* Initialisation de la position gauche */
+            transform: translateY(-50%);
+            transition: background-color 0.3s;
+            box-shadow: 0 0 20px 10px rgba(0, 255, 0, 0.5); /* Effet de halo */
+        }
+        .controls {
+            position: absolute;
+            bottom: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 70%;
+        }
+        #speedSlider {
+            width: 30%; /* Réduire à 30% */
+            margin-left: 10px;
+        }
+        #colorPicker {
+            width: 40px;
+            height: 40px;
+            border: none;
+            padding: 0;
+            margin: 0 10px;
+            border-radius: 50%;
+            background-color: transparent;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+        #colorPicker::-webkit-color-swatch {
+            border-radius: 50%;
+            border: none;
+        }
+        #colorPicker::-moz-color-swatch {
+            border-radius: 50%;
+            border: none.
+        }
+        #fullscreenButton {
+            margin-left: 10px;
+            padding: 10px;
+            font-family: 'Material Icons';
+            cursor: pointer;
+            background-color: transparent;
+            border: none;
+            border-radius: 50%;
+            font-size: 48px; /* Taille de l'icône augmentée */
+        }
+        #toggleButton {
+            margin-left: 10px;
+            padding: 10px;
+            font-family: 'Material Icons';
+            cursor: pointer;
+            background-color: transparent;
+            border: none;
+            border-radius: 50%;
+            font-size: 48px; /* Taille de l'icône augmentée */
+        }
+        .material-icons.md-48 { font-size: 48px; } /* Icône de taille 48px */
+        .hidden { display: none; } /* Classe cachée */
+    </style>
+</head>
+<body>
+    <div class="title" id="title"><span class="material-icons md-48" id="titleIcon">visibility</span>&nbsp;Eye Movement Desensitization and Reprocessing Therapy</div>
+    <div class="light" id="light"></div>
+    <div class="controls" id="controls">
+        <input type="color" value="#00ff00" id="colorPicker">
+        <input type="range" min="0" max="10" value="5" id="speedSlider">
+        <button id="fullscreenButton" class="material-icons md-48">fullscreen</button>
+        <button id="toggleButton" class="material-icons md-48">play_circle</button>
+    </div>
+    <script>
+        const light = document.getElementById('light');
+        const title = document.getElementById('title');
+        const titleIcon = document.getElementById('titleIcon');
+        const controls = document.getElementById('controls');
+        const speedSlider = document.getElementById('speedSlider');
+        const colorPicker = document.getElementById('colorPicker');
+        const fullscreenButton = document.getElementById('fullscreenButton');
+        const toggleButton = document.getElementById('toggleButton');
+
+        let posX = 0;
+        let direction = 1;
+        let speed = speedSlider.value * 10;
+        let isAnimating = true;
+
+        function updateSpeed() {
+            speed = speedSlider.value * 10; // Vitesse multipliée par 10
+        }
+
+        function updateColor() {
+            const color = colorPicker.value;
+            light.style.backgroundColor = color;
+            light.style.boxShadow = `0 0 20px 10px ${color}80`; // Mise à jour de la couleur du halo
+            title.style.color = color; // Mise à jour de la couleur du titre
+            titleIcon.style.color = color; // Mise à jour de la couleur de l'icône du titre
+            fullscreenButton.style.color = color; // Mise à jour de la couleur de l'icône plein écran
+            toggleButton.style.color = color; // Mise à jour de la couleur de l'icône de pause/lecture
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                title.classList.add('hidden'); // Cacher le titre
+                controls.classList.add('hidden'); // Cacher les contrôles
+            } else if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+
+        function exitFullscreen() {
+            if (!document.fullscreenElement) {
+                title.classList.remove('hidden'); // Afficher le titre
+                controls.classList.remove('hidden'); // Afficher les contrôles
+            }
+        }
+
+        function toggleAnimation() {
+            isAnimating = !isAnimating;
+            toggleButton.textContent = isAnimating ? 'pause_circle' : 'play_circle';
+            if (isAnimating) {
+                requestAnimationFrame(animateLight);
+            }
+        }
+
+        function animateLight() {
+            if (!isAnimating) return;
+            posX += direction * speed; // Application directe de la vitesse
+
+            if (posX <= 0 || posX >= window.innerWidth - 100) {
+                direction *= -1;
+            }
+
+            light.style.left = `${posX}px`;
+            requestAnimationFrame(animateLight);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space') {
+                toggleAnimation();
+            }
+        });
+
+        speedSlider.addEventListener('input', updateSpeed);
+        colorPicker.addEventListener('input', updateColor);
+        fullscreenButton.addEventListener('click', toggleFullscreen);
+        toggleButton.addEventListener('click', toggleAnimation);
+        document.addEventListener('fullscreenchange', exitFullscreen);
+
+        updateSpeed(); // Initialisation de la vitesse
+        updateColor(); // Initialisation de la couleur du halo
+        animateLight();
+    </script>
+</body>
+</html>
