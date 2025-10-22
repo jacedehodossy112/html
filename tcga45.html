@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liens Google Agenda - TC Garennois</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #1F4E78;
+            text-align: center;
+        }
+        .match-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .journee {
+            font-weight: bold;
+            font-size: 18px;
+            color: #1F4E78;
+        }
+        .date {
+            color: #666;
+            font-size: 16px;
+        }
+        .match-info {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+        .type-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .domicile {
+            background-color: #C6EFCE;
+            color: #006100;
+        }
+        .exterieur {
+            background-color: #FFC7CE;
+            color: #9C0006;
+        }
+        .btn-calendar {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #4285f4;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        .btn-calendar:hover {
+            background-color: #3367d6;
+        }
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+        .time-info {
+            color: #4285f4;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>📅 Calendrier TC Garennois - Liens Google Agenda</h1>
+    
+    <div class="instructions">
+        <strong>📌 Instructions :</strong> Cliquez sur le bouton "Ajouter à Google Agenda" sous chaque match pour l'ajouter automatiquement à votre calendrier.<br>
+        <strong>🕐 Horaires :</strong> Domicile = 10h00 | Extérieur = 9h00
+    </div>
+
+    <div class="match-card">
+        <div class="match-header">
+            <span class="journee">Journée 1</span>
+            <span class="date">📅 07/12/2025</span>
+        </div>
+        <div class="match-info">
+            <strong>COLOMBES (TC) 1 vs GARENNOIS (TC) 1</strong>
+        </div>
+        <div class="match-info">
+            📍 Lieu: Colombes | <span class="type-badge exterieur">Extérieur</span> | <span class="time-info">🕐 9h00 - 12h00</span>
+        </div>
+        <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=%F0%9F%8E%BE%20COLOMBES%20%28TC%29%201%20vs%20GARENNOIS%20%28TC%29%201&dates=20251207T090000/20251207T120000&details=Journ%C3%A9e%201%20-%20Match%20Ext%C3%A9rieur&location=Colombes" target="_blank" class="btn-calendar">➕ Ajouter à Google Agenda</a>
+    </div>
+    
+    <div class="match-card">
+        <div class="match-header">
+            <span class="journee">Journée 3</span>
+            <span class="date">📅 11/01/2026</span>
+        </div>
+        <div class="match-info">
+            <strong>GARENNOIS (TC) 1 vs GARCHES TENNIS CLUB 1</strong>
+        </div>
+        <div class="match-info">
+            📍 Lieu: Garennois | <span class="type-badge domicile">Domicile</span> | <span class="time-info">🕐 10h00 - 13h00</span>
+        </div>
+        <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=%F0%9F%8E%BE%20GARENNOIS%20%28TC%29%201%20vs%20GARCHES%20TENNIS%20CLUB%201&dates=20260111T100000/20260111T130000&details=Journ%C3%A9e%203%20-%20Match%20Domicile&location=Garennois" target="_blank" class="btn-calendar">➕ Ajouter à Google Agenda</a>
+    </div>
+    
+    <div class="match-card">
+        <div class="match-header">
+            <span class="journee">Journée 5</span>
+            <span class="date">📅 25/01/2026</span>
+        </div>
+        <div class="match-info">
+            <strong>GARENNOIS (TC) 1 vs MEUDON TENNIS (AS) 2</strong>
+        </div>
+        <div class="match-info">
+            📍 Lieu: Garennois | <span class="type-badge domicile">Domicile</span> | <span class="time-info">🕐 10h00 - 13h00</span>
+        </div>
+        <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=%F0%9F%8E%BE%20GARENNOIS%20%28TC%29%201%20vs%20MEUDON%20TENNIS%20%28AS%29%202&dates=20260125T100000/20260125T130000&details=Journ%C3%A9e%205%20-%20Match%20Domicile&location=Garennois" target="_blank" class="btn-calendar">➕ Ajouter à Google Agenda</a>
+    </div>
+    
+    <div class="match-card">
+        <div class="match-header">
+            <span class="journee">Journée 2</span>
+            <span class="date">📅 01/02/2026</span>
+        </div>
+        <div class="match-info">
+            <strong>GARENNOIS (TC) 1 vs VAUCRESSON (TC) 1</strong>
+        </div>
+        <div class="match-info">
+            📍 Lieu: Garennois | <span class="type-badge domicile">Domicile</span> | <span class="time-info">🕐 10h00 - 13h00</span>
+        </div>
+        <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=%F0%9F%8E%BE%20GARENNOIS%20%28TC%29%201%20vs%20VAUCRESSON%20%28TC%29%201&dates=20260201T100000/20260201T130000&details=Journ%C3%A9e%202%20-%20Match%20Domicile&location=Garennois" target="_blank" class="btn-calendar">➕ Ajouter à Google Agenda</a>
+    </div>
+    
+    <div class="match-card">
+        <div class="match-header">
+            <span class="journee">Journée 4</span>
+            <span class="date">📅 08/02/2026</span>
+        </div>
+        <div class="match-info">
+            <strong>CHATILLONNAIS (TCM) 1 vs GARENNOIS (TC) 1</strong>
+        </div>
+        <div class="match-info">
+            📍 Lieu: Chatillonnais | <span class="type-badge exterieur">Extérieur</span> | <span class="time-info">🕐 9h00 - 12h00</span>
+        </div>
+        <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=%F0%9F%8E%BE%20CHATILLONNAIS%20%28TCM%29%201%20vs%20GARENNOIS%20%28TC%29%201&dates=20260208T090000/20260208T120000&details=Journ%C3%A9e%204%20-%20Match%20Ext%C3%A9rieur&location=Chatillonnais" target="_blank" class="btn-calendar">➕ Ajouter à Google Agenda</a>
+    </div>
+    
+</body>
+</html>
