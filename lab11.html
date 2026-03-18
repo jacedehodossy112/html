@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratoire de Physique - Raquette de Tennis</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 15px; color: #333; }
+        h1 { text-align: center; color: #2c3e50; font-size: 1.5em; margin-bottom: 20px; }
+        .dashboard { display: flex; flex-direction: column; gap: 20px; max-width: 1600px; margin: 0 auto; }
+        .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .visuals-panel { display: flex; flex-direction: column; gap: 20px; width: 100%; box-sizing: border-box; }
+        .control-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 0.95em; }
+        input[type="range"] { width: 100%; height: 25px; }
+        select { padding: 10px; font-size: 1em; border-radius: 5px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; background-color: #fff; }
+        .value-display { float: right; color: #27ae60; font-weight: bold; }
+        
+        .player-section {
+            background-color: #eaf2f8; 
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #2980b9; 
+            margin-top: 10px;
+        }
+        .player-section h3 { margin-top: 0; color: #2980b9; margin-bottom: 15px; }
+
+        .heatmaps-zone { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+        .spin-zone { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        
+        .graph-wrapper { flex: 1; display: flex; flex-direction: column; }
+        .graph-container { width: 100%; height: 50vh; min-height: 350px; }
+        .spin-widget { width: 100%; height: 220px; }
+
+        /* Style des Titres et Info-bulles (Tooltip) */
+        .graph-title {
+            text-align: center;
+            color: #2c3e50;
+            margin: 0 0 5px 0;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .info-icon {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #3498db;
+            color: white;
+            font-size: 0.75em;
+            font-weight: bold;
+            font-style: italic;
+            cursor: help;
+            position: relative;
+        }
+        .info-icon .tooltip {
+            visibility: hidden;
+            width: 280px;
+            background-color: #2c3e50;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 12px;
+            position: absolute;
+            z-index: 10;
+            bottom: 135%;
+            left: 50%;
+            margin-left: -140px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.85em;
+            font-weight: normal;
+            font-style: normal;
+            line-height: 1.4;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
+        }
+        .info-icon .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -6px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: #2c3e50 transparent transparent transparent;
+        }
+        .info-icon:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        @media (min-width: 768px) {
+            h1 { font-size: 2em; }
+            .dashboard { flex-direction: row; }
+            .inputs-panel { flex: 1; min-width: 320px; max-width: 380px; }
+            .visuals-panel { flex: 3; }
+            .heatmaps-zone { flex-direction: row; } 
+            .graph-container { height: 500px; }
+            .spin-zone { flex-direction: row; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Simulateur de Performance Biomécanique</h1>
+
+    <div class="dashboard">
+        <div class="panel inputs-panel">
+            <h3>Spécifications de la Raquette</h3>
+            
+            <div class="control-group">
+                <label>Taille du tamis (cm²) <span id="val-headsize" class="value-display">645</span></label>
+                <input type="range" id="headsize" min="580" max="710" step="5" value="645">
+            </div>
+
+            <div class="control-group">
+                <label>Plan de cordage</label>
+                <div style="display: flex; gap: 10px;">
+                    <select id="mains" style="flex: 1;">
+                        <option value="14">14 Montants</option>
+                        <option value="16" selected>16 Montants</option>
+                        <option value="18">18 Montants</option>
+                    </select>
+                    <select id="crosses" style="flex: 1;">
+                        <option value="14">14 Travers</option>
+                        <option value="15">15 Travers</option>
+                        <option value="16">16 Travers</option>
+                        <option value="17">17 Travers</option>
+                        <option value="18">18 Travers</option>
+                        <option value="19" selected>19 Travers</option>
+                        <option value="20">20 Travers</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Masse Statique (g) <span id="val-mass" class="value-display">300</span></label>
+                <input type="range" id="mass" min="250" max="360" step="1" value="300">
+            </div>
+
+            <div class="control-group">
+                <label>Équilibre (cm depuis le manche) <span id="val-bal" class="value-display">32.0</span></label>
+                <input type="range" id="bal" min="30.0" max="35.0" step="0.1" value="32.0">
+            </div>
+
+            <div class="control-group">
+                <label>Swingweight (kg·cm²) <span id="val-sw" class="value-display">315</span></label>
+                <input type="range" id="sw" min="260" max="380" step="1" value="315">
+            </div>
+
+            <div class="control-group">
+                <label>Twistweight (kg·cm²) <span id="val-tw" class="value-display">14.0</span></label>
+                <input type="range" id="tw" min="10.0" max="20.0" step="0.1" value="14.0">
+            </div>
+
+            <div class="control-group">
+                <label>Rigidité (RA) <span id="val-ra" class="value-display">65</span></label>
+                <input type="range" id="ra" min="50" max="75" step="1" value="65">
+            </div>
+
+            <div class="player-section">
+                <h3>Dynamique du Joueur</h3>
+                
+                <div class="control-group">
+                    <label>Vitesse de balle entrante (km/h) <span id="val-vin" class="value-display">60</span></label>
+                    <input type="range" id="vin" min="0" max="120" step="1" value="60">
+                </div>
+
+                <div class="control-group">
+                    <label>Niveau du joueur (Vitesse de bras)</label>
+                    <select id="player-level">
+                        <option value="70">Amateur (~70 km/h)</option>
+                        <option value="100" selected>Compétiteur (~100 km/h)</option>
+                        <option value="130">Professionnel (~130 km/h)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Mode de Swing</label>
+                    <select id="swing-mode">
+                        <option value="constant_effort">Effort Constant (Biomécanique)</option>
+                        <option value="constant_speed">Vitesse de Frappe Constante</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Trajectoire de frappe</label>
+                    <select id="swing-style">
+                        <option value="5">Frappe à plat (Angle 5°)</option>
+                        <option value="30" selected>Lift standard (Angle 30°)</option>
+                        <option value="45">Lift extrême (Angle 45°)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel visuals-panel">
+            
+            <div class="heatmaps-zone">
+                <div class="graph-wrapper">
+                    <h3 class="graph-title">Rendement (ACOR)
+                        <div class="info-icon">i
+                            <span class="tooltip"><strong>Hypothèse :</strong> Modélisation de la collision élastique (Coefficient de Restitution Apparent).<br><br><strong>Calcul :</strong> Dépend de la masse effective locale et de la rigidité du cadre. Plus c'est vert, moins la raquette recule ou se tord à l'impact, offrant une restitution d'énergie maximale à la balle (Tolérance & Confort).</span>
+                        </div>
+                    </h3>
+                    <div id="heatmap" class="graph-container"></div>
+                </div>
+                <div class="graph-wrapper">
+                    <h3 class="graph-title">Vitesse de Balle Sortante
+                        <div class="info-icon">i
+                            <span class="tooltip"><strong>Hypothèse :</strong> Addition de la vitesse de rebond et de la vitesse de la tête de raquette.<br><br><strong>Calcul :</strong> Bien que le rendement (ACOR) soit maximal près du cœur, la tête de raquette se déplace beaucoup plus vite grâce à l'effet de levier. Le point vert représente le compromis idéal générant la vitesse absolue maximale.</span>
+                        </div>
+                    </h3>
+                    <div id="speedmap" class="graph-container"></div>
+                </div>
+            </div>
+            
+            <div class="spin-zone">
+                <div class="graph-wrapper">
+                    <h3 class="graph-title">Potentiel d'Effet (Matériel)
+                        <div class="info-icon">i
+                            <span class="tooltip"><strong>Hypothèse :</strong> Modélisation du mouvement et du retour élastique des cordes ("Snap-Back").<br><br><strong>Calcul :</strong> L'indice est inversement proportionnel à la densité du plan de cordage. Il est amplifié par un "Facteur de Stabilité" : des inerties (Swingweight/Twistweight) élevées forcent l'énergie de l'impact dans le mouvement latéral des cordes plutôt que dans la torsion du cadre.</span>
+                        </div>
+                    </h3>
+                    <div id="spingauge" class="spin-widget"></div>
+                </div>
+                <div class="graph-wrapper">
+                    <h3 class="graph-title">Rotation Estimée (RPM)
+                        <div class="info-icon">i
+                            <span class="tooltip"><strong>Hypothèse :</strong> Modélisation biomécanique du frottement et du lift.<br><br><strong>Calcul :</strong> Dépend de la vitesse du bras et de la trajectoire de frappe, multipliés par le potentiel matériel. En mode 'Effort Constant', un Swingweight trop lourd diminuera l'accélération verticale du joueur, réduisant mécaniquement la quantité de lift (RPM).</span>
+                        </div>
+                    </h3>
+                    <div id="rpmdisplay" class="spin-widget"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- 1. MOTEUR PHYSIQUE (Basé sur TWU) ---
+        const M_BALL = 0.0575; 
+        const AXIS_ROTATION = 10; 
+        const Y_CENTER_STRINGBED = 54; 
+        const SW_REF = 300; 
+
+        function calculatePhysics(M_g, Balance_cm, SW, TW, ra, headsize_cm2, mains, crosses, v_in_kmh, swing_mode, v_swing_ref) {
+            let M_kg = M_g / 1000;
+            let d_cm = Balance_cm - AXIS_ROTATION; 
+            let I_cm = SW - (M_kg * Math.pow(d_cm, 2));
+
+            let density_ref = (16 * 19) / 645;
+            let current_density = (mains * crosses) / headsize_cm2;
+            let base_spin_potential = 50 * (density_ref / current_density);
+            let stability_bonus = 1 + ((TW - 14) * 0.015) + ((SW - 315) * 0.0015); 
+            let spin_potential = base_spin_potential * stability_bonus;
+
+            let trampoline_effect = 1 + (density_ref - current_density) * 0.1;
+            let e_base = 0.65 + ((ra - 50) / 25) * 0.25;
+            let e_frame = e_base * (1 + (headsize_cm2 - 645) * 0.00015) * trampoline_effect;
+
+            let v_swing_center = v_swing_ref;
+            if (swing_mode === 'constant_effort') {
+                v_swing_center = v_swing_ref * Math.sqrt(SW_REF / SW);
+            }
+            let v_swing_ratio = v_swing_center / v_swing_ref;
+
+            let scale_factor = Math.sqrt(headsize_cm2 / 645);
+            let rx = 12.5 * scale_factor; 
+            let ry = 14.0 * scale_factor; 
+
+            let z_acor = [];
+            let z_speeds = []; 
+            let x_vals = [];
+            let y_vals = [];
+            
+            for (let y = 37; y <= 71; y += 1) {
+                y_vals.push(y);
+                let z_row_acor = [];
+                let z_row_speeds = [];
+                for (let x = -15; x <= 15; x += 1) {
+                    if (y === 37) x_vals.push(x);
+
+                    if (Math.pow(x/rx, 2) + Math.pow((y-Y_CENTER_STRINGBED)/ry, 2) > 1) {
+                        z_row_acor.push(null); 
+                        z_row_speeds.push(null);
+                        continue;
+                    }
+
+                    let y_cm_Me = Math.abs(y - Balance_cm);
+                    let x_cm_Me = Math.abs(x);
+
+                    let inv_Me = (1 / M_kg) + (Math.pow(y_cm_Me, 2) / I_cm) + (Math.pow(x_cm_Me, 2) / TW);
+                    let Me = 1 / inv_Me;
+
+                    let acor = (e_frame * Me - M_BALL) / (Me + M_BALL);
+                    let acor_perc = acor > 0 ? acor * 100 : 0;
+                    z_row_acor.push(acor_perc); 
+
+                    let v_locale = v_swing_center * ((y - AXIS_ROTATION) / (Y_CENTER_STRINGBED - AXIS_ROTATION));
+                    let v_rebond = acor * (v_in_kmh + v_locale);
+                    let v_shot = v_rebond + v_locale;
+                    z_row_speeds.push(v_shot > 0 ? v_shot : 0);
+                }
+                z_acor.push(z_row_acor);
+                z_speeds.push(z_row_speeds);
+            }
+
+            return { x: x_vals, y: y_vals, z_acor: z_acor, z_speeds: z_speeds, spin: spin_potential, v_swing_ratio: v_swing_ratio };
+        }
+
+        // --- 2. INTERFACE ET GRAPHIQUES ---
+        const inputsIds = ['headsize', 'mains', 'crosses', 'mass', 'bal', 'sw', 'tw', 'ra', 'vin', 'swing-mode', 'swing-style', 'player-level'];
+        
+        function updateDashboard() {
+            let vals = {};
+            inputsIds.forEach(id => {
+                let el = document.getElementById(id);
+                let val;
+                if(el.tagName === 'SELECT') {
+                    val = isNaN(el.value) ? el.value : parseInt(el.value);
+                } else {
+                    val = parseFloat(el.value);
+                    if(document.getElementById('val-' + id)) {
+                        document.getElementById('val-' + id).innerText = el.value;
+                    }
+                }
+                vals[id.replace('-','_')] = val; 
+            });
+
+            let data = calculatePhysics(vals.mass, vals.bal, vals.sw, vals.tw, vals.ra, vals.headsize, vals.mains, vals.crosses, vals.vin, vals.swing_mode, vals.player_level);
+
+            let isMobile = window.innerWidth < 768;
+            let commonMargin = isMobile ? { l: 40, r: 10, t: 10, b: 30 } : { l: 50, r: 20, t: 10, b: 40 };
+
+            // 1. Heat Map de PUISSANCE (ACOR)
+            let heatmapTrace = {
+                z: data.z_acor, x: data.x, y: data.y, type: 'contour',
+                colorscale: [[0.0, '#e74c3c'], [0.5, '#f1c40f'], [1.0, '#2ecc71']], 
+                zmin: 10, zmax: 50, 
+                contours: { showlabels: true, labelfont: { color: '#333' } },
+                colorbar: { thickness: isMobile ? 10 : 15 }
+            };
+            let layoutHeat = { 
+                xaxis: { title: isMobile ? '' : 'Axe Latéral (cm)', showticklabels: !isMobile },
+                yaxis: { title: 'Distance Manche (cm)', scaleanchor: "x", scaleratio: 1 },
+                margin: commonMargin
+            };
+            Plotly.react('heatmap', [heatmapTrace], layoutHeat, {responsive: true});
+
+            // 2. Heat Map de VITESSE
+            let speedmapTrace = {
+                z: data.z_speeds, x: data.x, y: data.y, type: 'contour',
+                colorscale: [[0.0, '#e74c3c'], [0.5, '#f1c40f'], [1.0, '#2ecc71']], 
+                zmin: 60, zmax: 220, 
+                contours: { showlabels: true, labelfont: { color: '#333' } },
+                colorbar: { thickness: isMobile ? 10 : 15 }
+            };
+            let layoutSpeed = { 
+                xaxis: { title: isMobile ? '' : 'Axe Latéral (cm)', showticklabels: !isMobile },
+                yaxis: { title: isMobile ? '' : 'Distance Manche (cm)', scaleanchor: "x", scaleratio: 1 },
+                margin: commonMargin
+            };
+            Plotly.react('speedmap', [speedmapTrace], layoutSpeed, {responsive: true});
+
+            // Génération du dégradé pour la jauge
+            let gradientSteps = [];
+            for (let i = 20; i < 100; i += 0.5) {
+                let t = (i - 20) / 80;
+                let r, g, b;
+                if (t < 0.5) {
+                    let p = t * 2; 
+                    r = Math.round(231 + p * (241 - 231));
+                    g = Math.round(76 + p * (196 - 76));
+                    b = Math.round(60 + p * (15 - 60));
+                } else {
+                    let p = (t - 0.5) * 2; 
+                    r = Math.round(241 + p * (46 - 241));
+                    g = Math.round(196 + p * (204 - 196));
+                    b = Math.round(15 + p * (113 - 15));
+                }
+                gradientSteps.push({ range: [i, i + 0.5], color: `rgb(${r},${g},${b})` });
+            }
+
+            // 3A. Jauge de Spin (Indice Théorique) avec fond dégradé
+            let spinTrace = {
+                type: "indicator", mode: "gauge+number", value: data.spin,
+                gauge: {
+                    axis: { range: [20, 100] },
+                    bar: { color: "#2c3e50", thickness: 0.3 },
+                    steps: gradientSteps
+                }
+            };
+            Plotly.react('spingauge', [spinTrace], { margin: { l: 30, r: 30, t: 20, b: 20 } }, {responsive: true});
+
+            // 3B. Compteur RPM (Résultat Joueur)
+            let base_rpm = 0;
+            let level_multiplier = vals.player_level / 100; 
+
+            if (vals.swing_style === 5) base_rpm = 800 * level_multiplier;       
+            else if (vals.swing_style === 30) base_rpm = 2200 * level_multiplier; 
+            else if (vals.swing_style === 45) base_rpm = 3200 * level_multiplier; 
+            
+            let rpm_calculated = base_rpm * data.v_swing_ratio * (data.spin / 50);
+
+            let rpmTrace = {
+                type: "indicator", mode: "number", value: Math.round(rpm_calculated),
+                number: { font: { size: isMobile ? 40 : 50, color: "#e67e22" }, suffix: " tr/min" }
+            };
+            Plotly.react('rpmdisplay', [rpmTrace], { margin: { l: 20, r: 20, t: 20, b: 20 } }, {responsive: true});
+        }
+
+        inputsIds.forEach(id => document.getElementById(id).addEventListener(id.includes('swing') || id.includes('mains') || id.includes('crosses') || id.includes('player') ? 'change' : 'input', updateDashboard));
+
+        updateDashboard();
+        window.addEventListener('resize', updateDashboard);
+    </script>
+</body>
+</html>
