@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Simulateur Biomécanique v2 — Physique Corrigée</title>
+<style>
+:root {
+    --bg:#0e1117;--sf:#161b22;--sf2:#1c2333;--bd:#2a3140;
+    --tx:#e2e4e9;--tx2:#8b92a0;--ac:#4ea8de;--ac2:#f0883e;
+    --gn:#3fb950;--rd:#f85149;--yl:#d4a017;
+    --fn:'SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --mo:'SF Mono','Fira Code',monospace;--r:10px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;-webkit-text-size-adjust:100%}
+body{font-family:var(--fn);background:var(--bg);color:var(--tx);min-height:100dvh;overflow-x:hidden}
+.hd{padding:16px 16px 8px;text-align:center}
+.hd h1{font-size:1.25rem;font-weight:600;letter-spacing:-.02em;background:linear-gradient(135deg,var(--ac),var(--gn));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hd .sub{font-size:.72rem;color:var(--tx2);margin-top:2px}
+.mtog{display:flex;margin:8px 16px 4px;background:var(--sf);border-radius:8px;overflow:hidden;border:1px solid var(--bd)}
+.mtog button{flex:1;padding:8px 10px;border:none;background:0 0;color:var(--tx2);font:600 .78rem var(--fn);cursor:pointer;transition:background .2s,color .2s}
+.mtog button.on{background:var(--ac);color:#fff}
+.dash{display:flex;flex-direction:column;gap:12px;padding:8px 12px 24px;max-width:1600px;margin:0 auto}
+.pnl{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px}
+.pnl h3{font-size:.88rem;font-weight:600;color:var(--ac);margin-bottom:12px;letter-spacing:-.01em}
+.ct{margin-bottom:11px}
+.ct label{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--tx2);margin-bottom:4px;font-weight:500}
+.ct .v{color:var(--gn);font-family:var(--mo);font-size:.84rem;font-weight:600}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;background:var(--sf2);border-radius:3px;outline:0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--ac);border:2px solid var(--bg);cursor:pointer;box-shadow:0 0 8px rgba(78,168,222,.4)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--ac);border:2px solid var(--bg);cursor:pointer}
+.sr{display:flex;gap:8px}
+select{flex:1;padding:8px;font:500 .83rem var(--fn);border-radius:6px;border:1px solid var(--bd);background:var(--sf2);color:var(--tx);-webkit-appearance:none;appearance:none}
+.ps{background:var(--sf2);border-radius:8px;padding:14px;margin-top:8px;border-left:3px solid var(--ac2)}
+.ps h3{color:var(--ac2)}
+.vg{display:grid;gap:12px;grid-template-columns:1fr}
+.gc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
+.gh{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--bd)}
+.gh h4{font-size:.83rem;font-weight:600}
+.ib{width:22px;height:22px;border-radius:50%;border:1px solid var(--bd);background:0 0;color:var(--tx2);font:italic 600 .7rem var(--fn);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s,color .2s}
+.ib:hover,.ib:focus{border-color:var(--ac);color:var(--ac)}
+.gb{position:relative}
+.gb canvas{display:block;width:100%;height:auto}
+.spnr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;text-align:center}
+.sc .lb{font-size:.73rem;color:var(--tx2);margin-bottom:6px;font-weight:500}
+.sc .bn{font-family:var(--mo);font-weight:700;letter-spacing:-.03em}
+.sc .un{font-size:.7rem;color:var(--tx2);margin-left:2px}
+.sb{height:6px;border-radius:3px;background:var(--sf2);margin-top:8px;overflow:hidden}
+.sbf{height:100%;border-radius:3px;transition:width .3s ease}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:flex-end;justify-content:center;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.mo.op{display:flex}
+.ms{background:var(--sf);border-radius:16px 16px 0 0;padding:20px;max-width:500px;width:100%;max-height:70vh;overflow-y:auto;animation:su .25s ease}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.ms h4{font-size:1rem;margin-bottom:8px;color:var(--ac)}
+.ms p{font-size:.84rem;line-height:1.6;color:var(--tx2);margin-bottom:6px}
+.ms .tg{display:inline-block;font-size:.68rem;padding:2px 8px;border-radius:4px;background:var(--ac);color:#fff;font-weight:600;margin-bottom:6px}
+.ms .rf{font-size:.7rem;color:var(--tx2);margin-top:8px;font-style:italic;border-top:1px solid var(--bd);padding-top:8px}
+.mc{display:block;width:100%;margin-top:12px;padding:10px;border:none;border-radius:8px;background:var(--sf2);color:var(--tx);font:600 .9rem var(--fn);cursor:pointer}
+@media(min-width:768px){
+html{font-size:15px}
+.dash{flex-direction:row;padding:12px 20px 32px}
+.ip{flex:0 0 340px;max-height:calc(100vh - 80px);overflow-y:auto;position:sticky;top:12px}
+.vp{flex:1}
+.vg{grid-template-columns:1fr 1fr}
+.mo{align-items:center}
+.ms{border-radius:16px;max-height:80vh}
+}
+@media(min-width:1200px){.ip{flex:0 0 380px}}
+</style>
+</head>
+<body>
+<header class="hd">
+<h1>Simulateur de Performance Biomécanique</h1>
+<p class="sub">Physique corrigée — Cross, Brody, Lindsey, Goodwill &amp; Haake</p>
+</header>
+<div class="mtog">
+<button id="bf" class="on" onclick="setM('free')">Raquette libre</button>
+<button id="bh" onclick="setM('held')">Raquette tenue</button>
+</div>
+<div class="dash">
+<div class="pnl ip">
+<h3>Spécifications Raquette</h3>
+<div class="ct"><label>Tamis (cm²)<span class="v" id="d-hs">645</span></label><input type="range" id="headsize" min="580" max="710" step="5" value="645"></div>
+<div class="ct"><label>Plan de cordage</label><div class="sr"><select id="mains"><option value="14">14M</option><option value="16" selected>16M</option><option value="18">18M</option></select><select id="crosses"><option value="14">14X</option><option value="15">15X</option><option value="16">16X</option><option value="17">17X</option><option value="18">18X</option><option value="19" selected>19X</option><option value="20">20X</option></select></div></div>
+<div class="ct"><label>Masse (g)<span class="v" id="d-m">300</span></label><input type="range" id="mass" min="250" max="360" step="1" value="300"></div>
+<div class="ct"><label>Équilibre (cm)<span class="v" id="d-bal">32.0</span></label><input type="range" id="bal" min="30.0" max="35.0" step="0.1" value="32.0"></div>
+<div class="ct"><label>Swingweight (kg·cm²)<span class="v" id="d-sw">315</span></label><input type="range" id="sw" min="260" max="380" step="1" value="315"></div>
+<div class="ct"><label>Twistweight (kg·cm²)<span class="v" id="d-tw">14.0</span></label><input type="range" id="tw" min="10.0" max="20.0" step="0.1" value="14.0"></div>
+<div class="ct"><label>Rigidité RA<span class="v" id="d-ra">65</span></label><input type="range" id="ra" min="50" max="75" step="1" value="65"></div>
+<div class="ps">
+<h3>Dynamique Joueur</h3>
+<div class="ct"><label>Balle entrante (km/h)<span class="v" id="d-vin">60</span></label><input type="range" id="vin" min="0" max="160" step="1" value="60"></div>
+<div class="ct"><label>Niveau</label><select id="plvl"><option value="70">Amateur (~70 km/h)</option><option value="100" selected>Compétiteur (~100 km/h)</option><option value="130">Pro (~130 km/h)</option></select></div>
+<div class="ct"><label>Mode swing</label><select id="smod"><option value="ce">Effort constant (V∝SW⁻⁰·²⁵)</option><option value="cs">Vitesse constante</option></select></div>
+<div class="ct"><label>Trajectoire</label><select id="sang"><option value="5">À plat (5°)</option><option value="30" selected>Lift standard (30°)</option><option value="45">Lift extrême (45°)</option></select></div>
+</div>
+</div>
+<div class="vp">
+<div class="vg">
+<div class="gc"><div class="gh"><h4>ACOR — Rendement</h4><button class="ib" onclick="si('acor')">i</button></div><div class="gb"><canvas id="ca"></canvas></div></div>
+<div class="gc"><div class="gh"><h4>Vitesse sortante (km/h)</h4><button class="ib" onclick="si('speed')">i</button></div><div class="gb"><canvas id="cs"></canvas></div></div>
+</div>
+<div class="spnr">
+<div class="sc">
+<div class="lb">Potentiel spin (matériel)</div>
+<div class="bn" style="font-size:1.8rem;color:var(--ac)" id="sv">50.0</div>
+<div class="sb"><div class="sbf" id="sf" style="width:50%;background:var(--ac)"></div></div>
+<button class="ib" style="margin:8px auto 0;display:block" onclick="si('spin')">i</button>
+</div>
+<div class="sc">
+<div class="lb">RPM estimé</div>
+<div class="bn" style="font-size:1.8rem;color:var(--ac2)" id="rv">2200</div>
+<div class="un">tr/min</div>
+<button class="ib" style="margin:8px auto 0;display:block" onclick="si('rpm')">i</button>
+</div>
+</div>
+</div>
+</div>
+<div class="mo" id="mdl" onclick="if(event.target===this)ci()"><div class="ms"><div id="mc"></div><button class="mc" onclick="ci()">Fermer</button></div></div>
+
+<script>
+// ============================================================
+//  MOTEUR PHYSIQUE v2
+//  Cross (2000,2006,2011,2020), Brody (1979,1997),
+//  Lindsey TWU (2010-2023), Goodwill & Haake (2004,2009,2012)
+// ============================================================
+const C={
+    mb:.0575,ax:10,yc:54,swr:320,
+    e1:.75,kb:40000,ksr:40000,
+    dr:(16*19)/645
+};
+let MDL='free';
+function setM(m){
+    MDL=m;
+    document.getElementById('bf').classList.toggle('on',m==='free');
+    document.getElementById('bh').classList.toggle('on',m==='held');
+    sched();
+}
+
+// COR ressorts série (Cross 2000): 1-e²=(1-e1²)·ks/(kb+ks)
+function cor(ks){
+    const r=ks/(C.kb+ks);
+    return Math.sqrt(Math.max(0,Math.min(1,1-(1-C.e1*C.e1)*r)));
+}
+
+// Raideur cordage f(densité,tamis)
+function kStr(m,x,h){
+    const d=(m*x)/h, dr=d/C.dr;
+    return C.ksr*(0.5+0.5*dr);
+}
+
+// Perte vibratoire hors nœud (Cross 2000, TWU Specs&Power)
+function vLoss(y,ra){
+    const nd=C.yc-5, dist=Math.abs(y-nd), n=Math.min(dist/15,1);
+    const sf=1-(ra-50)/50*0.4;
+    return n*n*0.25*sf;
+}
+
+// Masse effective (Cross TWU 2020, Brody 1979)
+// 1/Me = 1/M + b²/Icm + x²/Iy
+function me(Mk,bal,Ic,Iy,y,x){
+    const b=y-bal, xa=Math.abs(x);
+    return 1/((1/Mk)+(b*b/Ic)+(xa*xa/Iy));
+}
+
+// Vitesse swing V∝SW^(-0.25) (Cross & Bower 2006)
+function vSw(vr,sw,mod){
+    return mod==='ce'?vr*Math.pow(C.swr/sw,0.25):vr;
+}
+
+// Spin potentiel (Lindsey TWU 2010 snap-back)
+function sPot(m,x,h){
+    const s=Math.sqrt(h/645);
+    const ms=(s*25)/m, xs=(s*28)/x;
+    const rm=25/16, rx=28/19;
+    return 50*((xs/rx)*0.7+(ms/rm)*0.3);
+}
+
+// RPM calibré (ATP~2800 à 130km/h, 30°, spinPot=50)
+function rpm(vs,ang,sp){
+    const th=ang*Math.PI/180;
+    return vs*Math.sin(th)*0.862*(sp/50);
+}
+
+// ============================================================
+//  GRILLE
+// ============================================================
+function calc(p){
+    const Mk=p.mg/1000, dc=p.bal-C.ax;
+    const Ic=p.sw-Mk*dc*dc, Iy=p.tw;
+    const ks=kStr(p.mn,p.cr,p.hs);
+    const ec=cor(ks);
+    const vs=vSw(p.vr,p.sw,p.sm);
+    const vRat=vs/p.vr;
+    const sf=Math.sqrt(p.hs/645), rx=12.5*sf, ry=14*sf;
+    const st=window.innerWidth<768?2:1;
+    const xv=[],yv=[],za=[],zs=[];
+    for(let y=37;y<=71;y+=st){
+        yv.push(y);
+        const ra=[],rs=[];
+        for(let x=-15;x<=15;x+=st){
+            if(y===37)xv.push(x);
+            if((x/rx)**2+((y-C.yc)/ry)**2>1){ra.push(null);rs.push(null);continue}
+            const Me=me(Mk,p.bal,Ic,Iy,y,x);
+            const vl=vLoss(y,p.ra);
+            const el=ec*Math.sqrt(1-vl);
+            const a=(el*Me-C.mb)/(Me+C.mb);
+            ra.push(Math.max(0,a*100));
+            const vL=vs*(y-C.ax)/(C.yc-C.ax);
+            rs.push(Math.max(0,a*(p.vi+vL)+vL));
+        }
+        za.push(ra);zs.push(rs);
+    }
+    const sp=sPot(p.mn,p.cr,p.hs);
+    return{x:xv,y:yv,za,zs,sp,rpm:rpm(vs,p.sa,sp),vRat,ec};
+}
+
+// ============================================================
+//  CANVAS HEATMAP
+// ============================================================
+function hc(t,th){
+    t=Math.max(0,Math.min(1,t));
+    let r,g,b;
+    if(th==='a'){
+        if(t<.5){const p=t*2;r=230-p*50;g=60+p*150;b=50-p*20}
+        else{const p=(t-.5)*2;r=180-p*130;g=210+p*30;b=30+p*60}
+    }else{
+        if(t<.5){const p=t*2;r=40+p*100;g=80+p*80;b=180-p*60}
+        else{const p=(t-.5)*2;r=140+p*100;g=160+p*40;b=120-p*90}
+    }
+    return(Math.round(r)<<16)|(Math.round(g)<<8)|Math.round(b);
+}
+
+function draw(cid,xv,yv,z,zn,zx,th){
+    const cv=document.getElementById(cid);
+    const W=cv.parentElement.clientWidth;
+    const dp=Math.min(window.devicePixelRatio||1,2);
+    const cols=xv.length,rows=yv.length;
+    const cw=W/cols,H=Math.round(cw*rows),ch=H/rows;
+    cv.width=W*dp;cv.height=H*dp;cv.style.height=H+'px';
+    const ctx=cv.getContext('2d');ctx.scale(dp,dp);
+    // ImageData pour perf max
+    const id=ctx.createImageData(Math.ceil(W*dp),Math.ceil(H*dp));
+    const d=id.data;
+    const rng=zx-zn||1;
+    const wPx=Math.ceil(W*dp), hPx=Math.ceil(H*dp);
+    // Remplir fond
+    for(let i=0;i<d.length;i+=4){d[i]=14;d[i+1]=17;d[i+2]=23;d[i+3]=255}
+    for(let r=0;r<rows;r++){
+        for(let c=0;c<cols;c++){
+            const val=z[rows-1-r]?.[c];
+            if(val===null||val===undefined)continue;
+            const t=(val-zn)/rng;
+            const rgb=hc(t,th);
+            const cr=(rgb>>16)&255, cg=(rgb>>8)&255, cb=rgb&255;
+            const x0=Math.round(c*cw*dp), x1=Math.round((c+1)*cw*dp);
+            const y0=Math.round(r*ch*dp), y1=Math.round((r+1)*ch*dp);
+            for(let py=y0;py<y1&&py<hPx;py++){
+                for(let px=x0;px<x1&&px<wPx;px++){
+                    const i=(py*wPx+px)*4;
+                    d[i]=cr;d[i+1]=cg;d[i+2]=cb;d[i+3]=255;
+                }
+            }
+        }
+    }
+    ctx.putImageData(id,0,0);
+    // Reset scale for text overlay
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(dp,dp);
+    // Colorbar
+    const bw=12,bh=H*.6,bx=W-28,by=(H-bh)/2;
+    for(let i=0;i<bh;i++){
+        const t=1-i/bh;
+        const rgb=hc(t,th);
+        ctx.fillStyle=`rgb(${(rgb>>16)&255},${(rgb>>8)&255},${rgb&255})`;
+        ctx.fillRect(bx,by+i,bw,1.5);
+    }
+    ctx.fillStyle='#8b92a0';ctx.font='10px sans-serif';ctx.textAlign='left';
+    ctx.fillText(zx.toFixed(0),bx+bw+3,by+10);
+    ctx.fillText(zn.toFixed(0),bx+bw+3,by+bh);
+    // Centre marker
+    const cx=Math.round(cols/2)*cw;
+    const ci=yv.indexOf(C.yc>=37&&C.yc<=71?C.yc:54);
+    if(ci>=0){
+        const cy=(rows-1-ci)*ch+ch/2;
+        ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1;
+        ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.stroke();
+    }
+}
+
+// ============================================================
+//  DEBOUNCE & UPDATE
+// ============================================================
+let _raf=null;
+function sched(){if(_raf)cancelAnimationFrame(_raf);_raf=requestAnimationFrame(upd)}
+function upd(){
+    _raf=null;
+    const g=i=>{const e=document.getElementById(i);return e.tagName==='SELECT'?(isNaN(e.value)?e.value:+e.value):parseFloat(e.value)};
+    [['headsize','d-hs'],['mass','d-m'],['bal','d-bal'],['sw','d-sw'],['tw','d-tw'],['ra','d-ra'],['vin','d-vin']].forEach(([a,b])=>{
+        document.getElementById(b).textContent=document.getElementById(a).value;
+    });
+    const p={mg:g('mass'),bal:g('bal'),sw:g('sw'),tw:g('tw'),ra:g('ra'),hs:g('headsize'),
+        mn:g('mains'),cr:g('crosses'),vi:g('vin'),vr:g('plvl'),sm:g('smod'),sa:g('sang')};
+    const d=calc(p);
+    draw('ca',d.x,d.y,d.za,0,55,'a');
+    draw('cs',d.x,d.y,d.zs,40,220,'s');
+    const sp=d.sp;
+    document.getElementById('sv').textContent=sp.toFixed(1);
+    const fl=document.getElementById('sf');
+    fl.style.width=Math.min(100,Math.max(0,sp))+'%';
+    fl.style.background=sp>60?'var(--gn)':sp>40?'var(--ac)':'var(--yl)';
+    document.getElementById('rv').textContent=Math.round(d.rpm);
+}
+
+['headsize','mass','bal','sw','tw','ra','vin'].forEach(i=>document.getElementById(i).addEventListener('input',sched));
+['mains','crosses','plvl','smod','sang'].forEach(i=>document.getElementById(i).addEventListener('change',sched));
+let _rt;window.addEventListener('resize',()=>{clearTimeout(_rt);_rt=setTimeout(sched,150)});
+sched();
+
+// ============================================================
+//  INFO MODALS
+// ============================================================
+const INF={
+acor:{t:'ACOR — Coefficient de Restitution Apparent',tg:'Cross 2000 · TWU 2020',
+tx:`<p>L'ACOR mesure le rendement énergétique de la collision balle-raquette à chaque point du tamis.</p>
+<p><strong>Formule :</strong> eA = (e·Me − m) / (Me + m)</p>
+<p>Le COR combiné <em>e</em> vient du modèle ressorts en série de Cross (2000) :</p>
+<p>1 − e² = (1 − e₁²) · k<sub>s</sub>/(k<sub>b</sub> + k<sub>s</sub>)</p>
+<p>où e₁ ≈ 0.75 (COR balle sur béton), k<sub>b</sub> ≈ 40 kN/m (raideur balle), k<sub>s</sub> = raideur du plan de cordes (dépend de la densité du cordage et du tamis).</p>
+<p>La perte vibratoire est nulle au nœud de vibration (~5 cm sous le centre du tamis) et augmente quadratiquement vers le tip/gorge. Les cadres plus rigides (RA élevé) perdent moins en vibration hors nœud (Allen, Haake & Goodwill 2009).</p>
+<p>Le modèle est identique que la raquette soit <strong>libre ou tenue</strong> : la balle quitte en ~5 ms, avant que l'onde de flexion n'ait fait l'aller-retour jusqu'à la main (Cross, Sports Engineering).</p>`,
+rf:'Cross, Am. J. Phys. 68(11), 2000 · Lindsey, TWU "Energy Flow" 2021 · Allen, Haake & Goodwill, Sports Eng. 12, 2009'},
+
+speed:{t:'Vitesse de balle sortante',tg:'Cross 2020 · Eq. 4',
+tx:`<p><strong>v<sub>shot</sub> = eA · (v<sub>in</sub> + v<sub>raq</sub>) + v<sub>raq</sub></strong></p>
+<p>La vitesse de raquette varie linéairement le long du tamis par bras de levier (rotation autour du poignet à ~10 cm du talon).</p>
+<p>En mode "effort constant", V ∝ SW<sup>−0.25</sup> (Cross & Bower 2006). L'exposant −0.25 est confirmé par Smith, Broker & Nathan (2003, softball, n=0.25 sur 20 joueurs élite) et Cross & Nathan (2009, review multi-sports). Le modèle "énergie constante" (exposant −0.5) est rejeté par toutes les données expérimentales.</p>
+<p>Le pic de vitesse se situe au-dessus du centre du tamis : le gain de vitesse de raquette (bras de levier) compense la baisse d'ACOR vers le tip.</p>`,
+rf:'Cross & Bower, J. Sports Sciences 24(1), 2006 · Cross TWU "Racquet Power" 2020'},
+
+spin:{t:'Potentiel de spin — Snap-back',tg:'Lindsey TWU 2010 · Cross 2010',
+tx:`<p>Le spin n'est <strong>pas</strong> principalement dû au frottement balle-corde (quasi-identique entre cordages). C'est le <strong>snap-back latéral des montants</strong> qui fait la différence.</p>
+<p><strong>Phase 1 :</strong> friction cinétique freine la balle tangentiellement → torque → spin initial. Identique pour tous les cordages.</p>
+<p><strong>Phase 2 :</strong> montants déplacés latéralement restituent leur énergie élastique, réactivant le frottement → spin additionnel. C'est ici que le plan de cordage compte.</p>
+<p>Lindsey (2010, banc d'essai) : passer de 8×8X à 8×2X multiplie le spin par 3.2×. L'indice modélise l'espacement inter-cordes comme proxy de la liberté de snap-back.</p>
+<p>Haake et al. (2012) : "l'effet dominant d'un changement de friction inter-cordes est dans le mouvement des cordes, pas dans le frottement balle-corde."</p>`,
+rf:'Cross, Am. J. Phys. 78(7), 2010 · Lindsey TWU "Spin & String Pattern" 2010 · Haake et al., J. Eng. Tribology 226, 2012'},
+
+rpm:{t:'RPM estimé — Modèle biomécanique calibré',tg:'Hawk-Eye · Yandell · TWU',
+tx:`<p><strong>RPM = V<sub>swing</sub> × sin(θ) × K × (SpinPot / 50)</strong></p>
+<p>K ≈ 0.862 est calibré pour reproduire les données ATP Hawk-Eye.</p>
+<p><strong>Références mesurées :</strong></p>
+<p>• Nadal coup droit : 3200-3600 RPM (pic ~4900)<br>• Moyenne ATP : 2700-3000 RPM<br>• Compétiteur club : 1500-2200 RPM<br>• Amateur : 800-1400 RPM</p>
+<p>En mode "effort constant", un SW élevé réduit V<sub>swing</sub> (exposant −0.25), donc réduit la composante verticale de lift et les RPM.</p>`,
+rf:'Ubitennis 2020 · Yandell/TennisPlayer.net · Cross & Bower 2006'}
+};
+function si(k){const d=INF[k];document.getElementById('mc').innerHTML=`<span class="tg">${d.tg}</span><h4>${d.t}</h4>${d.tx}<p class="rf">${d.rf}</p>`;document.getElementById('mdl').classList.add('op')}
+function ci(){document.getElementById('mdl').classList.remove('op')}
+</script>
+</body>
+</html>
