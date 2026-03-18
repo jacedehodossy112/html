@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Simulateur Biomécanique v14</title>
+<style>
+:root{
+  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+  --mono:'SF Mono','Fira Code',Consolas,monospace;
+  --radius:18px;
+  --radius-sm:14px;
+  --shadow:0 12px 30px rgba(15,23,42,.08);
+  --shadow-soft:0 8px 22px rgba(15,23,42,.06);
+}
+body[data-theme="light"]{
+  --bg:#eef3f7;
+  --panel:#ffffff;
+  --panel-2:#f7fafc;
+  --panel-3:#eef4f9;
+  --text:#243444;
+  --muted:#677888;
+  --border:#d6e0e9;
+  --accent:#3498db;
+  --accent-2:#e67e22;
+  --accent-soft:#eaf4fb;
+  --success:#27ae60;
+  --danger:#e74c3c;
+  --track:#dfe7ef;
+  --grid:rgba(36,52,68,.10);
+  --axis:rgba(36,52,68,.82);
+  --zero:rgba(36,52,68,.36);
+  --plot:#ffffff;
+  --plot-soft:#f6f9fc;
+  --marker:#ffffff;
+  --marker-stroke:#425466;
+  --overlay:rgba(15,23,42,.42);
+}
+body[data-theme="dark"]{
+  --bg:#0e1117;
+  --panel:#161b22;
+  --panel-2:#1c2333;
+  --panel-3:#0f1723;
+  --text:#e6edf3;
+  --muted:#97a7bb;
+  --border:#2d3748;
+  --accent:#4ea8de;
+  --accent-2:#f39c55;
+  --accent-soft:#162231;
+  --success:#3fb950;
+  --danger:#f85149;
+  --track:#263042;
+  --grid:rgba(230,237,243,.09);
+  --axis:rgba(230,237,243,.82);
+  --zero:rgba(230,237,243,.28);
+  --plot:#101926;
+  --plot-soft:#0d1520;
+  --marker:#ffffff;
+  --marker-stroke:#4b5563;
+  --overlay:rgba(0,0,0,.62);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  margin:0;
+  min-height:100dvh;
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  transition:background .2s ease,color .2s ease;
+}
+button,input,select{font:inherit}
+.app{max-width:1600px;margin:0 auto;padding:14px}
+.header-card,.panel,.graph-card,.metric-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-soft);
+}
+.header-card{padding:16px;margin-bottom:16px}
+.header-top{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:14px}
+.title-wrap h1{margin:0;font-size:clamp(1.35rem,2.7vw,2rem);line-height:1.12;letter-spacing:-.03em}
+.title-wrap p{margin:6px 0 0;color:var(--muted);font-size:.95rem;max-width:780px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px}
+.segmented{
+  display:inline-flex;gap:4px;padding:4px;
+  border-radius:999px;background:var(--panel-2);border:1px solid var(--border);
+}
+.segmented button{
+  border:0;background:transparent;color:var(--muted);padding:10px 14px;border-radius:999px;
+  cursor:pointer;font-weight:800;min-height:40px;line-height:1;
+}
+.segmented button.active{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(52,152,219,.24)}
+.dashboard{display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
+.panel{padding:16px}
+.panel h3,.graph-title,.metric-title{margin:0 0 14px;font-size:1rem;line-height:1.2}
+.control-group{margin-bottom:14px}
+.control-group:last-child{margin-bottom:0}
+.control-group label{display:flex;justify-content:space-between;gap:10px;margin-bottom:7px;font-size:.95rem;font-weight:700}
+.value-display{font-family:var(--mono);font-weight:800;color:var(--success);white-space:nowrap}
+.range{width:100%;margin:0;accent-color:var(--accent);touch-action:pan-y}
+.range::-webkit-slider-thumb{width:22px;height:22px}
+.select-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+select{
+  width:100%;min-height:44px;padding:11px 12px;border-radius:12px;
+  border:1px solid var(--border);background:var(--panel-3);color:var(--text);
+}
+.player-section{
+  margin-top:12px;padding:15px;border-radius:var(--radius-sm);
+  background:var(--accent-soft);border-left:4px solid var(--accent-2);
+}
+.player-section h3{margin:0 0 14px}
+.visuals-panel{display:flex;flex-direction:column;gap:16px;min-width:0}
+.heatmaps-zone,.metrics-zone{display:grid;grid-template-columns:1fr;gap:16px;min-width:0}
+.graph-card,.metric-card{overflow:hidden;min-width:0}
+.graph-head,.metric-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 10px}
+.graph-head{border-bottom:1px solid var(--border)}
+.metric-head{padding-bottom:0}
+.graph-title,.metric-title{margin:0;font-size:1.02rem}
+.info-btn{
+  flex:0 0 auto;width:28px;height:28px;border-radius:999px;border:1px solid var(--border);
+  background:var(--panel-2);color:var(--accent);font-weight:800;font-style:italic;cursor:pointer;
+}
+.plot-wrap{padding:14px}
+.plot-shell{display:grid;grid-template-columns:minmax(0,1fr) 52px;gap:10px;align-items:stretch}
+.plot-stage{
+  position:relative;width:100%;aspect-ratio:1/1.05;min-height:320px;
+  background:var(--plot);border:1px solid var(--border);border-radius:16px;overflow:hidden;
+}
+.plot-canvas,.plot-overlay{position:absolute;inset:0;width:100%;height:100%;display:block}
+.plot-overlay{pointer-events:none}
+.marker-label{
+  position:absolute;min-width:30px;padding:3px 7px;border-radius:999px;background:rgba(0,0,0,.18);
+  color:#fff;font-size:.8rem;font-weight:800;line-height:1;text-align:center;pointer-events:none;
+  transform:translate(-50%,-125%);text-shadow:0 1px 3px rgba(0,0,0,.45);backdrop-filter:blur(3px);
+}
+.colorbar{
+  border:1px solid var(--border);border-radius:14px;background:var(--panel-2);
+  padding:10px 8px;display:flex;justify-content:center;align-items:center;
+}
+.colorbar-inner{position:relative;width:100%;height:100%;min-height:260px;display:flex;justify-content:center}
+.colorbar-track{position:absolute;left:6px;top:8%;bottom:8%;width:16px;border-radius:999px;border:1px solid rgba(0,0,0,.12)}
+.colorbar-ticks{position:absolute;left:28px;top:8%;bottom:8%;right:0;font-size:.76rem;color:var(--muted)}
+.colorbar-ticks span{position:absolute;transform:translateY(50%);white-space:nowrap;font-family:var(--mono)}
+.colorbar-title{position:absolute;top:0;left:0;right:0;text-align:left;font-size:.72rem;font-weight:800;color:var(--muted)}
+.metric-body{padding:14px 16px 16px}
+.metric-value{font-family:var(--mono);font-size:clamp(1.9rem,4vw,2.7rem);font-weight:900;letter-spacing:-.04em}
+.metric-sub{margin-top:6px;color:var(--muted);font-size:.92rem;line-height:1.45}
+.progress{height:10px;border-radius:999px;background:var(--track);overflow:hidden;margin-top:12px}
+.progress-fill{height:100%;border-radius:999px;transition:width .22s ease,background .22s ease}
+.badge{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:7px 10px;border-radius:999px;background:var(--panel-2);border:1px solid var(--border);font-size:.78rem;font-weight:700;color:var(--muted)}
+.legend-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;color:var(--muted);font-size:.8rem}
+.legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
+.modal{
+  position:fixed;inset:0;padding:12px;background:var(--overlay);display:none;align-items:flex-end;justify-content:center;
+  z-index:50;backdrop-filter:blur(4px)
+}
+.modal.open{display:flex}
+.modal-sheet{
+  width:min(620px,100%);max-height:min(82vh,760px);overflow:auto;background:var(--panel);color:var(--text);
+  border:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px;box-shadow:var(--shadow)
+}
+.modal-tag{display:inline-block;margin-bottom:8px;padding:4px 10px;border-radius:999px;background:var(--accent);color:#fff;font-size:.76rem;font-weight:800}
+.modal-sheet h4{margin:0 0 10px;font-size:1.08rem}
+.modal-sheet p{margin:0 0 10px;line-height:1.58;color:var(--muted)}
+.modal-sheet .ref{padding-top:10px;border-top:1px solid var(--border);font-size:.84rem;font-style:italic}
+.modal-close{width:100%;min-height:44px;border:0;border-radius:12px;background:var(--panel-2);color:var(--text);font-weight:800;margin-top:12px;cursor:pointer}
+.sr-only{position:absolute;left:-9999px}
+@media (max-width:520px){
+  .app{padding:10px}
+  .toolbar{width:100%}
+  .toolbar .segmented{width:100%;justify-content:center}
+  .toolbar .segmented button{flex:1}
+  .select-row{grid-template-columns:1fr}
+  .plot-shell{grid-template-columns:minmax(0,1fr) 46px;gap:8px}
+  .plot-stage{min-height:300px}
+  .colorbar-title{font-size:.68rem}
+}
+@media (min-width:900px){
+  .dashboard{grid-template-columns:minmax(320px,390px) minmax(0,1fr)}
+  .panel{position:sticky;top:14px;max-height:calc(100vh - 28px);overflow:auto}
+  .heatmaps-zone{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .metrics-zone{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .modal{align-items:center}
+  .modal-sheet{border-radius:20px}
+}
+</style>
+</head>
+<body data-theme="light">
+<div class="app">
+  <header class="header-card">
+    <div class="header-top">
+      <div class="title-wrap">
+        <h1>Simulateur de Performance Biomécanique</h1>
+        <p>Physique corrigée (Cross, Brody, Lindsey, Goodwill &amp; Haake) — Canvas + SVG contours — Thème clair / sombre</p>
+      </div>
+      <div class="toolbar">
+        <div class="segmented" aria-label="Choix du thème">
+          <button id="themeLight" type="button" class="active">Clair</button>
+          <button id="themeDark" type="button">Sombre</button>
+        </div>
+    </div>
+  </header>
+
+  <div class="dashboard">
+    <aside class="panel">
+      <h3>Spécifications de la raquette (non cordée)</h3>
+
+      <div class="control-group">
+        <label for="headsize">Tamis (cm²) <span id="val-headsize" class="value-display">645</span></label>
+        <input class="range" type="range" id="headsize" min="580" max="710" step="5" value="645">
+      </div>
+
+      <div class="control-group">
+        <label>Plan de cordage</label>
+        <div class="select-row">
+          <select id="mains">
+            <option value="14">14 montants</option>
+            <option value="16" selected>16 montants</option>
+            <option value="18">18 montants</option>
+          </select>
+          <select id="crosses">
+            <option value="14">14 travers</option>
+            <option value="15">15 travers</option>
+            <option value="16">16 travers</option>
+            <option value="17">17 travers</option>
+            <option value="18">18 travers</option>
+            <option value="19" selected>19 travers</option>
+            <option value="20">20 travers</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label for="mass">Masse (g) <span id="val-mass" class="value-display">300</span></label>
+        <input class="range" type="range" id="mass" min="250" max="360" step="1" value="300">
+      </div>
+
+      <div class="control-group">
+        <label for="bal">Équilibre (cm) <span id="val-bal" class="value-display">32.0</span></label>
+        <input class="range" type="range" id="bal" min="30.0" max="35.0" step="0.1" value="32.0">
+      </div>
+
+      <div class="control-group">
+        <label for="sw">Swingweight (kg·cm²) <span id="val-sw" class="value-display">290</span></label>
+        <input class="range" type="range" id="sw" min="240" max="340" step="1" value="290">
+      </div>
+
+      <div class="control-group">
+        <label for="tw">Twistweight (kg·cm²) <span id="val-tw" class="value-display">14.0</span></label>
+        <input class="range" type="range" id="tw" min="10.0" max="20.0" step="0.1" value="14.0">
+      </div>
+
+      <div class="control-group">
+        <label for="ra">Rigidité RA <span id="val-ra" class="value-display">65</span></label>
+        <input class="range" type="range" id="ra" min="50" max="75" step="1" value="65">
+      </div>
+
+      <div class="player-section">
+        <h3>Dynamique du joueur</h3>
+
+        <div class="control-group">
+          <label for="vin">Balle entrante (km/h) <span id="val-vin" class="value-display">60</span></label>
+          <input class="range" type="range" id="vin" min="0" max="160" step="1" value="60">
+        </div>
+
+        <div class="control-group">
+          <label for="player-level">Niveau</label>
+          <select id="player-level">
+            <option value="70">Amateur (~70 km/h)</option>
+            <option value="100" selected>Compétiteur (~100 km/h)</option>
+            <option value="130">Pro (~130 km/h)</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="swing-mode">Mode swing</label>
+          <select id="swing-mode">
+            <option value="constant_effort">Effort constant (V∝SW⁻⁰·²⁵)</option>
+            <option value="constant_speed">Vitesse constante</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="swing-style">Trajectoire</label>
+          <select id="swing-style">
+            <option value="5">À plat (5°)</option>
+            <option value="30" selected>Lift standard (30°)</option>
+            <option value="45">Lift extrême (45°)</option>
+          </select>
+        </div>
+      </div>
+    </aside>
+
+    <section class="visuals-panel">
+      <div class="heatmaps-zone">
+        <article class="graph-card">
+          <div class="graph-head">
+            <h3 class="graph-title">Rendement (ACOR)</h3>
+            <button class="info-btn" type="button" data-info="acor" aria-label="Informations ACOR">i</button>
+          </div>
+          <div class="plot-wrap">
+            <div class="plot-shell">
+              <div class="plot-stage" id="acorStage">
+                <canvas id="acorCanvas" class="plot-canvas"></canvas>
+                <svg id="acorOverlay" class="plot-overlay" aria-hidden="true"></svg>
+                <div id="acorMarkerLabel" class="marker-label">52</div>
+              </div>
+              <div class="colorbar">
+                <div class="colorbar-inner">
+                  <div class="colorbar-title">ACOR</div>
+                  <div class="colorbar-track" id="acorTrack"></div>
+                  <div class="colorbar-ticks" id="acorTicks"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="graph-card">
+          <div class="graph-head">
+            <h3 class="graph-title">Vitesse de balle sortante</h3>
+            <button class="info-btn" type="button" data-info="speed" aria-label="Informations vitesse sortante">i</button>
+          </div>
+          <div class="plot-wrap">
+            <div class="plot-shell">
+              <div class="plot-stage" id="speedStage">
+                <canvas id="speedCanvas" class="plot-canvas"></canvas>
+                <svg id="speedOverlay" class="plot-overlay" aria-hidden="true"></svg>
+                <div id="speedMarkerLabel" class="marker-label">140</div>
+              </div>
+              <div class="colorbar">
+                <div class="colorbar-inner">
+                  <div class="colorbar-title">km/h</div>
+                  <div class="colorbar-track" id="speedTrack"></div>
+                  <div class="colorbar-ticks" id="speedTicks"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="metrics-zone">
+        <article class="metric-card">
+          <div class="metric-head">
+            <h3 class="metric-title">Potentiel d'effet (matériel)</h3>
+            <button class="info-btn" type="button" data-info="spin" aria-label="Informations spin">i</button>
+          </div>
+          <div class="metric-body">
+            <div id="spinValue" class="metric-value" style="color:var(--accent)">50.0</div>
+            <div class="progress"><div id="spinFill" class="progress-fill" style="width:50%;background:var(--accent)"></div></div>
+            <div class="legend-row">
+              <span><span class="legend-dot" style="background:#ef4335"></span>faible</span>
+              <span><span class="legend-dot" style="background:#e6a12a"></span>moyen</span>
+              <span><span class="legend-dot" style="background:#31c86a"></span>élevé</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="metric-card">
+          <div class="metric-head">
+            <h3 class="metric-title">Rotation estimée (RPM)</h3>
+            <button class="info-btn" type="button" data-info="rpm" aria-label="Informations RPM">i</button>
+          </div>
+          <div class="metric-body">
+            <div id="rpmValue" class="metric-value" style="color:var(--accent-2)">2200</div>
+            <div class="progress"><div id="rpmFill" class="progress-fill" style="width:48%;background:var(--accent-2)"></div></div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="modal" class="modal" aria-hidden="true">
+  <div class="modal-sheet">
+    <div id="modalContent"></div>
+    <button id="closeModal" class="modal-close" type="button">Fermer</button>
+  </div>
+</div>
+
+<script>
+const CONST = {
+  mb: 0.0575,
+  ax: 10,
+  yc: 54,
+  swr: 290,
+  e1: 0.75,
+  kb: 40000,
+  ksr: 40000,
+  dr: (16 * 19) / 645,
+  mobileBreakpoint: 768,
+  xMin: -15,
+  xMax: 15,
+  yMin: 37,
+  yMax: 71
+};
+
+const RANGE_IDS = ['headsize','mass','bal','sw','tw','ra','vin'];
+const SELECT_IDS = ['mains','crosses','player-level','swing-mode','swing-style'];
+const DOM = Object.fromEntries([...RANGE_IDS, ...SELECT_IDS].map(id => [id, document.getElementById(id)]));
+const DISPLAY = Object.fromEntries(RANGE_IDS.map(id => [id, document.getElementById(`val-${id}`)]));
+
+const state = {
+  mode: 'free',
+  theme: 'light',
+  rafId: null,
+  resizeTimer: null,
+  lastData: null
+};
+
+const INFO = {
+  acor: {
+    tag: 'Cross 2000 \u00b7 Lindsey TWU 2021 \u00b7 Allen, Haake & Goodwill 2009',
+    title: 'ACOR \u2014 Coefficient de restitution apparent',
+    text: `
+      <p>L\u2019ACOR mesure le rendement \u00e9nerg\u00e9tique de la collision balle-raquette \u00e0 chaque point du tamis.</p>
+      <p><strong>Formule :</strong> eA = (e\u00b7Me \u2212 m) / (Me + m)</p>
+      <p>Le COR combin\u00e9 <em>e</em> vient du <strong>mod\u00e8le ressorts en s\u00e9rie</strong> de Cross (Am. J. Phys. 68, 2000) :</p>
+      <p style="padding:8px 12px;background:var(--panel-2);border-radius:8px;font-family:var(--mono);font-size:.82rem">1 \u2212 e\u00b2 = (1 \u2212 e\u2081\u00b2) \u00b7 k<sub>s</sub> / (k<sub>b</sub> + k<sub>s</sub>)</p>
+      <p>o\u00f9 e\u2081 \u2248 0.75 (COR balle sur b\u00e9ton), k<sub>b</sub> \u2248 40 kN/m, k<sub>s</sub> = raideur du plan de cordes.</p>
+      <p>La perte vibratoire est <strong>nulle au n\u0153ud de vibration</strong> (~5 cm sous le centre) et augmente quadratiquement vers le tip/gorge. Les cadres rigides (RA \u00e9lev\u00e9) perdent moins en vibration hors-n\u0153ud.</p>
+      <p class="ref">Cross, Am. J. Phys. 68(11), 2000 \u00b7 Lindsey, TWU "Energy Flow" 2021 \u00b7 Allen et al., Sports Eng. 12, 2009</p>`
+  },
+  speed: {
+    tag: 'Cross & Bower 2006 \u00b7 Cross TWU 2020',
+    title: 'Vitesse de balle sortante',
+    text: `
+      <p><strong>v<sub>shot</sub> = eA \u00d7 (v<sub>in</sub> + v<sub>raq</sub>) + v<sub>raq</sub></strong></p>
+      <p>La vitesse de raquette varie lin\u00e9airement le long du tamis par bras de levier.</p>
+      <p>En mode <strong>effort constant</strong>, V \u221d SW<sup>\u22120.25</sup> (Cross & Bower, J. Sports Sciences 24(1), 2006). Le mod\u00e8le \u00e9nergie constante (exposant \u22120.5) est rejet\u00e9 par toutes les donn\u00e9es exp\u00e9rimentales.</p>
+      <p class="ref">Cross & Bower, J. Sports Sciences 24(1), 2006 \u00b7 Cross TWU "Racquet Power" 2020</p>`
+  },
+  spin: {
+    tag: 'Lindsey TWU 2010 \u00b7 Cross 2010 \u00b7 Haake et al. 2012',
+    title: "Potentiel d\u2019effet \u2014 Snap-back",
+    text: `
+      <p>Le spin n\u2019est <strong>pas</strong> principalement d\u00fb au frottement balle-corde. C\u2019est le <strong>snap-back lat\u00e9ral des montants</strong> qui diff\u00e9rencie les setups.</p>
+      <p><strong>Phase 1 :</strong> friction cin\u00e9tique \u2192 spin initial. Identique pour tous les cordages.</p>
+      <p><strong>Phase 2 :</strong> montants d\u00e9plac\u00e9s restituent leur \u00e9nergie \u00e9lastique \u2192 spin additionnel.</p>
+      <p>Lindsey (2010) : passer de 8\u00d78X \u00e0 8\u00d72X <strong>multiplie le spin par 3.2\u00d7</strong>.</p>
+      <p><strong>Paramètres du modèle :</strong> (1) espacement inter-cordes — nb montants, nb travers, taille tamis (facteur dominant, 2-6× de variation mesurée) ; (2) raideur du plan de cordes via la densité (proxy de la rigidité latérale — une fenêtre optimale existe : trop dense freine le snap-back, trop souple le rend inefficace).</p>
+      <p><strong>Référence :</strong> Luxilon ALU Power 125, 23 kg, plan 16×19, tamis 645 cm² → indice ≈ 32/100 (zone "moyen"). Échelle normalisée : 0 = pire (18×20/580 cm²), 100 = meilleur (14×14/750 cm²).</p>
+      <p><strong>Non modélisé :</strong> friction inter-cordes (COF), type de corde (poly vs gut vs nylon), jauge, texture. Le TWU Spin Potential (SP = COF_balle / COF_corde) est un complément utile pour comparer les cordes entre elles.</p>
+      <p class="ref">Cross, Am. J. Phys. 78(7), 2010 \u00b7 Lindsey TWU 2010 \u00b7 Haake et al., J. Eng. Tribology 226, 2012</p>`
+  },
+  rpm: {
+    tag: 'Hawk-Eye ATP \u00b7 Yandell \u00b7 Cross & Bower 2006',
+    title: 'RPM estim\u00e9 \u2014 Mod\u00e8le biom\u00e9canique calibr\u00e9',
+    text: `
+      <p><strong>RPM = V<sub>swing</sub> \u00d7 sin(\u03b8) \u00d7 K \u00d7 (SpinPot / 50)</strong></p>
+      <p>K \u2248 0.862 calibr\u00e9 sur donn\u00e9es ATP Hawk-Eye.</p>
+      <p>\u2022 Nadal : 3200-3600 RPM (pic ~4900)<br>\u2022 Moyenne ATP : 2700-3000<br>\u2022 Comp\u00e9titeur club : 1500-2200<br>\u2022 Amateur : 800-1400</p>
+      <p class="ref">Ubitennis 2020 \u00b7 Yandell/TennisPlayer.net \u00b7 Cross & Bower 2006</p>
+      <p><strong>Param\u00e8tres du mod\u00e8le :</strong> vitesse de swing (niveau joueur \u00d7 correction swingweight), angle de frappe (trajectoire), et potentiel d\u2019effet mat\u00e9riel.</p>`
+  }
+};
+
+function isMobile(){ return window.innerWidth < CONST.mobileBreakpoint; }
+function dpr(){ return Math.min(window.devicePixelRatio || 1, 2); }
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+function round1(v){ return Math.round(v * 10) / 10; }
+
+function setTheme(theme){
+  state.theme = theme;
+  document.body.setAttribute('data-theme', theme);
+  document.getElementById('themeLight').classList.toggle('active', theme === 'light');
+  document.getElementById('themeDark').classList.toggle('active', theme === 'dark');
+  localStorage.setItem('lab-theme', theme);
+  updateColorbars();
+  scheduleRender(true);
+}
+
+function updateDisplayedValues(){
+  RANGE_IDS.forEach(id => {
+    DISPLAY[id].textContent = DOM[id].value;
+  });
+}
+
+function cor(ks){
+  const ratio = ks / (CONST.kb + ks);
+  return Math.sqrt(Math.max(0, Math.min(1, 1 - (1 - CONST.e1 * CONST.e1) * ratio)));
+}
+
+function kString(mains, crosses, headsize){
+  const density = (mains * crosses) / headsize;
+  const relativeDensity = density / CONST.dr;
+  return CONST.ksr * (0.5 + 0.5 * relativeDensity);
+}
+
+function vibrationLoss(y, ra){
+  const node = CONST.yc - 5;
+  const dist = Math.abs(y - node);
+  const normalized = Math.min(dist / 15, 1);
+  const stiffnessFactor = 1 - ((ra - 50) / 50) * 0.4;
+  return normalized * normalized * 0.25 * stiffnessFactor;
+}
+
+function effectiveMass(Mkg, balance, Icm, Iy, y, x){
+  const b = y - balance;
+  const xa = Math.abs(x);
+  return 1 / ((1 / Mkg) + ((b * b) / Icm) + ((xa * xa) / Iy));
+}
+
+function swingVelocity(vRef, sw, mode){
+  return mode === 'constant_effort' ? vRef * Math.pow(CONST.swr / sw, 0.25) : vRef;
+}
+
+function spinPotential(mains, crosses, headsize){
+  // === Modèle multi-facteurs (Lindsey TWU 2010-2013, Cross 2010) ===
+  // Réf : Luxilon ALU Power 125 @ 23 kg, 16×19, 645 cm² → ~32/100
+  //
+  // Facteur 1 : Espacement inter-cordes (70% travers, 30% montants)
+  const scale = Math.sqrt(headsize / 645);
+  const mainsSpacing = (scale * 25) / mains;
+  const crossesSpacing = (scale * 28) / crosses;
+  const spacingFactor = (crossesSpacing / (28/19)) * 0.7 + (mainsSpacing / (25/16)) * 0.3;
+
+  // Facteur 2 : Raideur du plan (cloche autour de l'optimum ~0.85×densité ref)
+  const density = (mains * crosses) / headsize;
+  const densityRatio = density / ((16*19)/645);
+  const stiffnessFactor = 1.05 - 0.35 * Math.pow(densityRatio - 0.85, 2);
+
+  const raw = spacingFactor * Math.max(0.5, stiffnessFactor);
+
+  // Normalisation 0-100 entre pire (18×20/580) et meilleur (14×14/750)
+  const RAW_MIN = 0.8602;  // rawSpin(18,20,580)
+  const RAW_MAX = 1.4212;  // rawSpin(14,14,750)
+  return Math.max(0, Math.min(100, ((raw - RAW_MIN) / (RAW_MAX - RAW_MIN)) * 100));
+}
+
+function rpmEstimate(vSwing, angleDeg, spinPot){
+  const theta = angleDeg * Math.PI / 180;
+  // Calibration: ATP ~2800 RPM at 130 km/h, 30° lift, spinPot≈32.4 (16×19/645)
+  // K = 2800 / (130 × sin(30°) × 32.4/50) = 2800 / 42.12 ≈ 66.48
+  const raw = vSwing * Math.sin(theta) * 66.48 * (spinPot / 50);
+  // Plafond réaliste : ~5000 RPM (kick serve Sampras, pic Nadal)
+  return Math.min(raw, 5500);
+}
+
+function calculatePhysics(params){
+  const Mkg = Math.max(params.mass / 1000, 0.001);
+  const dc = params.balance - CONST.ax;
+  const Icm = Math.max(params.sw - Mkg * dc * dc, 1);
+  const Iy = Math.max(params.tw, 0.1);
+  const ks = kString(params.mains, params.crosses, params.headsize);
+  const ec = cor(ks);
+  const vSwing = swingVelocity(params.playerLevel, params.sw, params.swingMode);
+  const scaleFactor = Math.sqrt(params.headsize / 645);
+  const rx = 12.5 * scaleFactor;
+  const ry = 14 * scaleFactor;
+  const step = isMobile() ? 1 : 1;
+  const xValues = [];
+  const yValues = [];
+  const zAcor = [];
+  const zSpeed = [];
+
+  for (let y = CONST.yMin; y <= CONST.yMax; y += step) {
+    yValues.push(y);
+    const rowAcor = [];
+    const rowSpeed = [];
+    for (let x = CONST.xMin; x <= CONST.xMax; x += step) {
+      if (y === CONST.yMin) xValues.push(x);
+      if (((x / rx) ** 2) + (((y - CONST.yc) / ry) ** 2) > 1) {
+        rowAcor.push(null);
+        rowSpeed.push(null);
+        continue;
+      }
+      const Me = effectiveMass(Mkg, params.balance, Icm, Iy, y, x);
+      const vLoss = vibrationLoss(y, params.ra);
+      const localE = ec * Math.sqrt(1 - vLoss);
+      const a = (localE * Me - CONST.mb) / (Me + CONST.mb);
+      const acorValue = Math.max(0, a * 100);
+      const localRacketSpeed = vSwing * ((y - CONST.ax) / (CONST.yc - CONST.ax));
+      const speedValue = Math.max(0, a * (params.vIn + localRacketSpeed) + localRacketSpeed);
+      rowAcor.push(acorValue);
+      rowSpeed.push(speedValue);
+    }
+    zAcor.push(rowAcor);
+    zSpeed.push(rowSpeed);
+  }
+
+  const spin = spinPotential(params.mains, params.crosses, params.headsize);
+  const rpm = rpmEstimate(vSwing, params.swingAngle, spin);
+
+  return { xValues, yValues, zAcor, zSpeed, spin, rpm, vSwing, ec, rx, ry };
+}
+
+function readParams(){
+  return {
+    headsize: Number(DOM['headsize'].value),
+    mains: Number(DOM['mains'].value),
+    crosses: Number(DOM['crosses'].value),
+    mass: Number(DOM['mass'].value),
+    balance: Number(DOM['bal'].value),
+    sw: Number(DOM['sw'].value),
+    tw: Number(DOM['tw'].value),
+    ra: Number(DOM['ra'].value),
+    vIn: Number(DOM['vin'].value),
+    playerLevel: Number(DOM['player-level'].value),
+    swingMode: DOM['swing-mode'].value,
+    swingAngle: Number(DOM['swing-style'].value)
+  };
+}
+
+function findMaxPoint(xValues, yValues, zValues){
+  let best = { x: 0, y: 0, z: -Infinity };
+  zValues.forEach((row, rowIndex) => {
+    row.forEach((value, colIndex) => {
+      if (value !== null && value > best.z) {
+        best = { x: xValues[colIndex], y: yValues[rowIndex], z: value };
+      }
+    });
+  });
+  return best;
+}
+
+function colorStops(){
+  return [
+    { t: 0.00, c: [239, 67, 53] },
+    { t: 0.20, c: [238, 124, 43] },
+    { t: 0.45, c: [212, 179, 31] },
+    { t: 0.70, c: [153, 213, 44] },
+    { t: 1.00, c: [49, 200, 106] }
+  ];
+}
+
+function colorAt(t){
+  const s = colorStops();
+  const clamped = clamp(t, 0, 1);
+  for (let i = 1; i < s.length; i++) {
+    if (clamped <= s[i].t) {
+      const a = s[i - 1], b = s[i];
+      const p = (clamped - a.t) / (b.t - a.t || 1);
+      const r = Math.round(a.c[0] + (b.c[0] - a.c[0]) * p);
+      const g = Math.round(a.c[1] + (b.c[1] - a.c[1]) * p);
+      const b2 = Math.round(a.c[2] + (b.c[2] - a.c[2]) * p);
+      return `rgb(${r},${g},${b2})`;
+    }
+  }
+  const last = s[s.length - 1].c;
+  return `rgb(${last[0]},${last[1]},${last[2]})`;
+}
+
+function gradientCss(){
+  return 'linear-gradient(to top, rgb(239,67,53) 0%, rgb(238,124,43) 20%, rgb(212,179,31) 45%, rgb(153,213,44) 70%, rgb(49,200,106) 100%)';
+}
+
+function updateColorbar(trackId, ticksId, min, max, values){
+  const track = document.getElementById(trackId);
+  const ticks = document.getElementById(ticksId);
+  track.style.background = gradientCss();
+  ticks.innerHTML = values.map(v => {
+    const pct = 100 - ((v - min) / (max - min || 1) * 100);
+    return `<span style="top:${pct}%">${v}</span>`;
+  }).join('');
+}
+
+function updateColorbars(){
+  updateColorbar('acorTrack', 'acorTicks', 0, 55, [55,45,35,25,15,0]);
+  updateColorbar('speedTrack', 'speedTicks', 60, 220, [220,180,140,100,60]);
+}
+
+function plotGeometry(stage){
+  const rect = stage.getBoundingClientRect();
+  const width = Math.max(10, Math.round(rect.width));
+  const height = Math.max(10, Math.round(rect.height));
+  const mobile = isMobile();
+  const margin = mobile
+    ? { top: 18, right: 10, bottom: 54, left: 52 }
+    : { top: 20, right: 12, bottom: 60, left: 60 };
+  return {
+    width,
+    height,
+    left: margin.left,
+    top: margin.top,
+    right: width - margin.right,
+    bottom: height - margin.bottom,
+    innerWidth: width - margin.left - margin.right,
+    innerHeight: height - margin.top - margin.bottom,
+    mobile
+  };
+}
+
+function xToPx(x, g){
+  return g.left + ((x - CONST.xMin) / (CONST.xMax - CONST.xMin)) * g.innerWidth;
+}
+
+function yToPx(y, g){
+  return g.top + ((CONST.yMax - y) / (CONST.yMax - CONST.yMin)) * g.innerHeight;
+}
+
+function drawHeatmap(canvasId, xValues, yValues, zValues, zmin, zmax){
+  const canvas = document.getElementById(canvasId);
+  const stage = canvas.parentElement;
+  const g = plotGeometry(stage);
+  const ratio = dpr();
+  canvas.width = Math.round(g.width * ratio);
+  canvas.height = Math.round(g.height * ratio);
+  canvas.style.width = `${g.width}px`;
+  canvas.style.height = `${g.height}px`;
+
+  const ctx = canvas.getContext('2d', { alpha: true });
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx.clearRect(0, 0, g.width, g.height);
+  ctx.fillStyle = cssVar('--plot');
+  ctx.fillRect(0, 0, g.width, g.height);
+  ctx.fillStyle = cssVar('--plot-soft');
+  ctx.fillRect(g.left, g.top, g.innerWidth, g.innerHeight);
+
+  const plotW = Math.max(1, Math.round(g.innerWidth * ratio));
+  const plotH = Math.max(1, Math.round(g.innerHeight * ratio));
+  const img = ctx.createImageData(plotW, plotH);
+  const data = img.data;
+  const cols = xValues.length;
+  const rows = yValues.length;
+  const cellW = g.innerWidth / cols;
+  const cellH = g.innerHeight / rows;
+  const range = zmax - zmin || 1;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const value = zValues[rows - 1 - r][c];
+      if (value === null || value === undefined) continue;
+      const color = colorAt((value - zmin) / range);
+      const match = color.match(/rgb\((\d+),(\d+),(\d+)\)/);
+      const cr = Number(match[1]);
+      const cg = Number(match[2]);
+      const cb = Number(match[3]);
+      const x0 = Math.floor(c * cellW * ratio);
+      const x1 = Math.min(plotW, Math.ceil((c + 1) * cellW * ratio));
+      const y0 = Math.floor(r * cellH * ratio);
+      const y1 = Math.min(plotH, Math.ceil((r + 1) * cellH * ratio));
+      for (let py = y0; py < y1; py++) {
+        let offset = (py * plotW + x0) * 4;
+        for (let px = x0; px < x1; px++) {
+          data[offset] = cr;
+          data[offset + 1] = cg;
+          data[offset + 2] = cb;
+          data[offset + 3] = 255;
+          offset += 4;
+        }
+      }
+    }
+  }
+
+  ctx.putImageData(img, Math.round(g.left * ratio), Math.round(g.top * ratio));
+}
+
+function edgePoint(edge, x0, y0, x1, y1, v0, v1, level, g){
+  const p = (level - v0) / ((v1 - v0) || 1e-9);
+  const x = x0 + (x1 - x0) * p;
+  const y = y0 + (y1 - y0) * p;
+  return `${round1(xToPx(x, g))},${round1(yToPx(y, g))}`;
+}
+
+function contourSegments(xValues, yValues, zValues, level, g){
+  const table = {
+    0: [], 1: [[3,0]], 2: [[0,1]], 3: [[3,1]],
+    4: [[1,2]], 5: [[3,2],[0,1]], 6: [[0,2]], 7: [[3,2]],
+    8: [[2,3]], 9: [[0,2]], 10: [[0,3],[1,2]], 11: [[1,2]],
+    12: [[1,3]], 13: [[0,1]], 14: [[3,0]], 15: []
+  };
+  let path = '';
+  for (let r = 0; r < yValues.length - 1; r++) {
+    for (let c = 0; c < xValues.length - 1; c++) {
+      const bl = zValues[r][c];
+      const br = zValues[r][c + 1];
+      const tl = zValues[r + 1][c];
+      const tr = zValues[r + 1][c + 1];
+      if ([bl, br, tl, tr].some(v => v === null || v === undefined)) continue;
+      const idx = (bl >= level ? 1 : 0) | (br >= level ? 2 : 0) | (tr >= level ? 4 : 0) | (tl >= level ? 8 : 0);
+      const segs = table[idx] || [];
+      if (!segs.length) continue;
+      const x0 = xValues[c], x1 = xValues[c + 1], y0 = yValues[r], y1 = yValues[r + 1];
+      const edgeMap = {
+        0: () => edgePoint(0, x0, y0, x1, y0, bl, br, level, g),
+        1: () => edgePoint(1, x1, y0, x1, y1, br, tr, level, g),
+        2: () => edgePoint(2, x0, y1, x1, y1, tl, tr, level, g),
+        3: () => edgePoint(3, x0, y0, x0, y1, bl, tl, level, g)
+      };
+      segs.forEach(([a,b]) => {
+        path += `M ${edgeMap[a]()} L ${edgeMap[b]()} `;
+      });
+    }
+  }
+  return path;
+}
+
+function renderOverlay(overlayId, xValues, yValues, zValues, options, physics, best){
+  const svg = document.getElementById(overlayId);
+  const stage = svg.parentElement;
+  const g = plotGeometry(stage);
+  svg.setAttribute('viewBox', `0 0 ${g.width} ${g.height}`);
+  svg.setAttribute('width', g.width);
+  svg.setAttribute('height', g.height);
+
+  const gridColor = cssVar('--grid');
+  const axisColor = cssVar('--axis');
+  const zeroColor = cssVar('--zero');
+  const plotBg = cssVar('--plot');
+  const border = cssVar('--border');
+  const markerFill = cssVar('--marker');
+  const markerStroke = cssVar('--marker-stroke');
+  const fontSize = g.mobile ? 10 : 11;
+  const labelFont = g.mobile ? 10 : 11;
+  const contourLevels = options.levels;
+
+  const xTicks = [-10,-5,0,5,10];
+  const yTicks = [40,45,50,55,60,65,70];
+
+  const gridLinesX = xTicks.map(x => {
+    const px = xToPx(x, g);
+    const stroke = x === 0 ? zeroColor : gridColor;
+    const width = x === 0 ? 1.6 : 1;
+    return `<line x1="${px}" y1="${g.top}" x2="${px}" y2="${g.bottom}" stroke="${stroke}" stroke-width="${width}" />`;
+  }).join('');
+  const gridLinesY = yTicks.map(y => {
+    const py = yToPx(y, g);
+    return `<line x1="${g.left}" y1="${py}" x2="${g.right}" y2="${py}" stroke="${gridColor}" stroke-width="1" />`;
+  }).join('');
+
+  const xLabels = xTicks.map(x => {
+    const px = xToPx(x, g);
+    return `<text x="${px}" y="${g.bottom + 22}" text-anchor="middle" font-size="${fontSize}" fill="${axisColor}" font-family="${cssVar('--font')}">${x}</text>`;
+  }).join('');
+  const yLabels = yTicks.map(y => {
+    const py = yToPx(y, g) + 3;
+    return `<text x="${g.left - 8}" y="${py}" text-anchor="end" font-size="${fontSize}" fill="${axisColor}" font-family="${cssVar('--font')}">${y}</text>`;
+  }).join('');
+
+  const contourPaths = contourLevels.map(level => {
+    const d = contourSegments(xValues, yValues, zValues, level, g);
+    return d ? `<path d="${d}" fill="none" stroke="${axisColor}" stroke-opacity="0.78" stroke-width="1.2" />` : '';
+  }).join('');
+
+  const contourLabels = g.mobile ? '' : contourLevels.map(level => {
+    const pos = findContourLabelPosition(zValues, xValues, yValues, level);
+    if (!pos) return '';
+    const px = xToPx(pos.x, g), py = yToPx(pos.y, g);
+    return `<text x="${px}" y="${py}" text-anchor="middle" font-size="10" fill="${axisColor}" font-family="${cssVar('--font')}" paint-order="stroke" stroke="${plotBg}" stroke-width="4">${level}</text>`;
+  }).join('');
+
+  const rxPx = (physics.rx / (CONST.xMax - CONST.xMin)) * g.innerWidth;
+  const ryPx = (physics.ry / (CONST.yMax - CONST.yMin)) * g.innerHeight;
+  const cx = xToPx(0, g);
+  const cy = yToPx(CONST.yc, g);
+  const markerX = xToPx(best.x, g);
+  const markerY = yToPx(best.y, g);
+
+  svg.innerHTML = `
+    <rect x="0.5" y="0.5" width="${g.width-1}" height="${g.height-1}" rx="16" fill="transparent" stroke="transparent" />
+    <rect x="${g.left}" y="${g.top}" width="${g.innerWidth}" height="${g.innerHeight}" fill="none" stroke="${border}" stroke-width="1" />
+    ${gridLinesX}
+    ${gridLinesY}
+    <ellipse cx="${cx}" cy="${cy}" rx="${rxPx}" ry="${ryPx}" fill="none" stroke="${axisColor}" stroke-opacity="0.22" stroke-width="1.2" />
+    ${contourPaths}
+    ${contourLabels}
+    <circle cx="${markerX}" cy="${markerY}" r="6.5" fill="${markerFill}" stroke="${markerStroke}" stroke-width="2.5" />
+    ${xLabels}
+    ${yLabels}
+    <text x="${g.left + g.innerWidth / 2}" y="${g.height - 12}" text-anchor="middle" font-size="${labelFont}" fill="${axisColor}" font-family="${cssVar('--font')}" font-weight="700">Axe latéral (cm)</text>
+    <text x="18" y="${g.top + g.innerHeight / 2}" text-anchor="middle" transform="rotate(-90 18 ${g.top + g.innerHeight / 2})" font-size="${labelFont}" fill="${axisColor}" font-family="${cssVar('--font')}" font-weight="700">Distance manche (cm)</text>
+  `;
+
+  return { markerX, markerY };
+}
+
+function findContourLabelPosition(zValues, xValues, yValues, level){
+  let best = null;
+  for (let r = 0; r < yValues.length; r++) {
+    for (let c = 0; c < xValues.length; c++) {
+      const value = zValues[r][c];
+      if (value === null || value === undefined) continue;
+      const diff = Math.abs(value - level);
+      if (!best || diff < best.diff) best = { diff, x: xValues[c], y: yValues[r] };
+    }
+  }
+  return best && best.diff < 1.8 ? best : null;
+}
+
+function placeMarker(labelId, marker, best){
+  const label = document.getElementById(labelId);
+  label.textContent = String(Math.round(best.z));
+  label.style.left = `${marker.markerX}px`;
+  label.style.top = `${marker.markerY}px`;
+}
+
+function renderMap(kind, data, physics){
+  if (kind === 'acor') {
+    drawHeatmap('acorCanvas', data.xValues, data.yValues, data.zAcor, 0, 55);
+    const best = findMaxPoint(data.xValues, data.yValues, data.zAcor);
+    const marker = renderOverlay('acorOverlay', data.xValues, data.yValues, data.zAcor, { levels: [15,20,30,35,45] }, physics, best);
+    placeMarker('acorMarkerLabel', marker, best);
+  } else {
+    drawHeatmap('speedCanvas', data.xValues, data.yValues, data.zSpeed, 60, 220);
+    const best = findMaxPoint(data.xValues, data.yValues, data.zSpeed);
+    const marker = renderOverlay('speedOverlay', data.xValues, data.yValues, data.zSpeed, { levels: [100,120,140,160,180] }, physics, best);
+    placeMarker('speedMarkerLabel', marker, best);
+  }
+}
+
+function renderMetrics(data){
+  const spin = clamp(data.spin, 0, 100);
+  const spinFill = document.getElementById('spinFill');
+  document.getElementById('spinValue').textContent = data.spin.toFixed(1);
+  spinFill.style.width = `${spin}%`;
+  spinFill.style.background = spin >= 55 ? '#31c86a' : (spin >= 25 ? '#e6a12a' : '#ef4335');
+
+  const rpm = Math.round(data.rpm);
+  document.getElementById('rpmValue').textContent = rpm.toString();
+  const rpmPct = clamp(rpm / 4500 * 100, 0, 100);
+  const rpmFill = document.getElementById('rpmFill');
+  rpmFill.style.width = `${rpmPct}%`;
+  rpmFill.style.background = cssVar('--accent-2');
+}
+
+function renderAll(){
+  state.rafId = null;
+  updateDisplayedValues();
+  const params = readParams();
+  const data = calculatePhysics(params);
+  state.lastData = data;
+  renderMap('acor', data, data);
+  renderMap('speed', data, data);
+  renderMetrics(data);
+}
+
+function scheduleRender(force = false){
+  if (force && state.rafId !== null) {
+    cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+  }
+  if (state.rafId !== null) return;
+  state.rafId = requestAnimationFrame(renderAll);
+}
+
+function openInfo(key){
+  const item = INFO[key];
+  if (!item) return;
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-tag">${item.tag}</div>
+    <h4>${item.title}</h4>
+    ${item.text}
+  `;
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('modal').setAttribute('aria-hidden', 'false');
+}
+
+function closeInfo(){
+  document.getElementById('modal').classList.remove('open');
+  document.getElementById('modal').setAttribute('aria-hidden', 'true');
+}
+
+RANGE_IDS.forEach(id => DOM[id].addEventListener('input', () => scheduleRender(), { passive: true }));
+SELECT_IDS.forEach(id => DOM[id].addEventListener('change', () => scheduleRender()));
+document.getElementById('themeLight').addEventListener('click', () => setTheme('light'));
+document.getElementById('themeDark').addEventListener('click', () => setTheme('dark'));
+document.querySelectorAll('.info-btn').forEach(btn => btn.addEventListener('click', () => openInfo(btn.dataset.info)));
+document.getElementById('closeModal').addEventListener('click', closeInfo);
+document.getElementById('modal').addEventListener('click', (event) => {
+  if (event.target.id === 'modal') closeInfo();
+});
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeInfo();
+});
+window.addEventListener('resize', () => {
+  clearTimeout(state.resizeTimer);
+  state.resizeTimer = setTimeout(() => scheduleRender(true), 150);
+}, { passive: true });
+window.addEventListener('orientationchange', () => {
+  clearTimeout(state.resizeTimer);
+  state.resizeTimer = setTimeout(() => scheduleRender(true), 180);
+}, { passive: true });
+
+const savedTheme = localStorage.getItem('lab-theme');
+if (savedTheme === 'dark' || savedTheme === 'light') {
+  setTheme(savedTheme);
+} else {
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  setTheme(prefersDark ? 'dark' : 'light');
+}
+updateColorbars();
+updateDisplayedValues();
+scheduleRender(true);
+</script>
+</body>
+</html>
