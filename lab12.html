@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Simulateur Biomécanique v2 — Physique Corrigée</title>
 <style>
 :root {
@@ -27,7 +27,7 @@ body{font-family:var(--fn);background:var(--bg);color:var(--tx);min-height:100dv
 .ct{margin-bottom:11px}
 .ct label{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--tx2);margin-bottom:4px;font-weight:500}
 .ct .v{color:var(--gn);font-family:var(--mo);font-size:.84rem;font-weight:600}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;background:var(--sf2);border-radius:3px;outline:0}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;background:var(--sf2);border-radius:3px;outline:0;touch-action:pan-y}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--ac);border:2px solid var(--bg);cursor:pointer;box-shadow:0 0 8px rgba(78,168,222,.4)}
 input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--ac);border:2px solid var(--bg);cursor:pointer}
 .sr{display:flex;gap:8px}
@@ -38,7 +38,7 @@ select{flex:1;padding:8px;font:500 .83rem var(--fn);border-radius:6px;border:1px
 .gc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden}
 .gh{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--bd)}
 .gh h4{font-size:.83rem;font-weight:600}
-.ib{width:22px;height:22px;border-radius:50%;border:1px solid var(--bd);background:0 0;color:var(--tx2);font:italic 600 .7rem var(--fn);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s,color .2s}
+.ib{width:22px;height:22px;border-radius:50%;border:1px solid var(--bd);background:0 0;color:var(--tx2);font:italic 600 .7rem var(--fn);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s,color .2s;-webkit-tap-highlight-color:transparent}
 .ib:hover,.ib:focus{border-color:var(--ac);color:var(--ac)}
 .gb{position:relative}
 .gb canvas{display:block;width:100%;height:auto}
@@ -280,43 +280,64 @@ function draw(cid,xv,yv,z,zn,zx,th){
     ctx.fillStyle='#8b92a0';ctx.font='10px sans-serif';ctx.textAlign='left';
     ctx.fillText(zx.toFixed(0),bx+bw+3,by+10);
     ctx.fillText(zn.toFixed(0),bx+bw+3,by+bh);
-    // Centre marker
-    const cx=Math.round(cols/2)*cw;
-    const ci=yv.indexOf(C.yc>=37&&C.yc<=71?C.yc:54);
-    if(ci>=0){
-        const cy=(rows-1-ci)*ch+ch/2;
-        ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1;
-        ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.stroke();
+    // Dynamic max-point marker (best performance zone)
+    const mp=maxPt(xv,yv,z);
+    const mci=xv.indexOf(mp.x), mri=yv.indexOf(mp.y);
+    if(mci>=0&&mri>=0){
+        const mx=mci*cw+cw/2, my=(rows-1-mri)*ch+ch/2;
+        ctx.fillStyle='#fff';ctx.strokeStyle='rgba(0,0,0,.6)';ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(mx,my,5,0,Math.PI*2);ctx.fill();ctx.stroke();
+        // Value label
+        ctx.fillStyle='#fff';ctx.font='bold 11px sans-serif';ctx.textAlign='center';
+        ctx.shadowColor='rgba(0,0,0,.7)';ctx.shadowBlur=3;
+        ctx.fillText(mp.z.toFixed(0),mx,my-10);
+        ctx.shadowBlur=0;
     }
 }
 
 // ============================================================
 //  DEBOUNCE & UPDATE
 // ============================================================
+// DOM cache (avoid getElementById per frame)
+const $=i=>document.getElementById(i);
+const DOM={};
+['headsize','mass','bal','sw','tw','ra','vin','plvl','smod','sang','mains','crosses'].forEach(i=>{DOM[i]=$(i)});
+const DISP={};
+[['headsize','d-hs'],['mass','d-m'],['bal','d-bal'],['sw','d-sw'],['tw','d-tw'],['ra','d-ra'],['vin','d-vin']].forEach(([a,b])=>{DISP[a]=$(b)});
+const $sv=$('sv'),$sf=$('sf'),$rv=$('rv');
+
+// Find max point in heatmap data
+function maxPt(xv,yv,z){
+    let bx=0,by=0,bz=-Infinity;
+    for(let r=0;r<z.length;r++)for(let c=0;c<z[r].length;c++){
+        const v=z[r][c];if(v!==null&&v>bz){bz=v;bx=xv[c];by=yv[r]}
+    }
+    return{x:bx,y:by,z:bz};
+}
+
 let _raf=null;
 function sched(){if(_raf)cancelAnimationFrame(_raf);_raf=requestAnimationFrame(upd)}
 function upd(){
     _raf=null;
-    const g=i=>{const e=document.getElementById(i);return e.tagName==='SELECT'?(isNaN(e.value)?e.value:+e.value):parseFloat(e.value)};
-    [['headsize','d-hs'],['mass','d-m'],['bal','d-bal'],['sw','d-sw'],['tw','d-tw'],['ra','d-ra'],['vin','d-vin']].forEach(([a,b])=>{
-        document.getElementById(b).textContent=document.getElementById(a).value;
-    });
+    const g=i=>{const e=DOM[i];return e.tagName==='SELECT'?(isNaN(e.value)?e.value:+e.value):parseFloat(e.value)};
+    for(const a in DISP) DISP[a].textContent=DOM[a].value;
     const p={mg:g('mass'),bal:g('bal'),sw:g('sw'),tw:g('tw'),ra:g('ra'),hs:g('headsize'),
         mn:g('mains'),cr:g('crosses'),vi:g('vin'),vr:g('plvl'),sm:g('smod'),sa:g('sang')};
     const d=calc(p);
     draw('ca',d.x,d.y,d.za,0,55,'a');
     draw('cs',d.x,d.y,d.zs,40,220,'s');
     const sp=d.sp;
-    document.getElementById('sv').textContent=sp.toFixed(1);
-    const fl=document.getElementById('sf');
-    fl.style.width=Math.min(100,Math.max(0,sp))+'%';
-    fl.style.background=sp>60?'var(--gn)':sp>40?'var(--ac)':'var(--yl)';
-    document.getElementById('rv').textContent=Math.round(d.rpm);
+    $sv.textContent=sp.toFixed(1);
+    $sf.style.width=Math.min(100,Math.max(0,sp))+'%';
+    $sf.style.background=sp>60?'var(--gn)':sp>40?'var(--ac)':'var(--yl)';
+    $rv.textContent=Math.round(d.rpm);
 }
 
-['headsize','mass','bal','sw','tw','ra','vin'].forEach(i=>document.getElementById(i).addEventListener('input',sched));
-['mains','crosses','plvl','smod','sang'].forEach(i=>document.getElementById(i).addEventListener('change',sched));
-let _rt;window.addEventListener('resize',()=>{clearTimeout(_rt);_rt=setTimeout(sched,150)});
+['headsize','mass','bal','sw','tw','ra','vin'].forEach(i=>DOM[i].addEventListener('input',sched,{passive:true}));
+['mains','crosses','plvl','smod','sang'].forEach(i=>DOM[i].addEventListener('change',sched));
+let _rt;
+window.addEventListener('resize',()=>{clearTimeout(_rt);_rt=setTimeout(sched,150)},{passive:true});
+window.addEventListener('orientationchange',()=>{clearTimeout(_rt);_rt=setTimeout(sched,200)},{passive:true});
 sched();
 
 // ============================================================
