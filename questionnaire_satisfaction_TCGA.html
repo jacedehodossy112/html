@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Questionnaire de satisfaction TCGA</title>
+  <style>
+    :root {
+      --primary: #1f6f43;
+      --primary-light: #e8f4ee;
+      --text: #1f2933;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --background: #f7f9fb;
+      --white: #ffffff;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 32px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+    }
+
+    .header p {
+      margin: 0;
+      font-size: 16px;
+      opacity: 0.95;
+    }
+
+    form {
+      background: var(--white);
+      padding: 28px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    section {
+      margin-bottom: 34px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    h2 {
+      color: var(--primary);
+      font-size: 22px;
+      margin: 0 0 18px;
+    }
+
+    .question {
+      margin-bottom: 22px;
+    }
+
+    .question p {
+      font-weight: bold;
+      margin: 0 0 10px;
+    }
+
+    label {
+      display: block;
+      margin: 7px 0;
+      cursor: pointer;
+    }
+
+    input[type="radio"],
+    input[type="checkbox"] {
+      margin-right: 8px;
+    }
+
+    textarea,
+    input[type="text"] {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 15px;
+      resize: vertical;
+    }
+
+    textarea {
+      min-height: 80px;
+    }
+
+    .grid {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--border);
+      padding: 10px;
+      text-align: center;
+    }
+
+    th:first-child,
+    td:first-child {
+      text-align: left;
+      width: 35%;
+    }
+
+    th {
+      background: var(--primary-light);
+      color: var(--text);
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 18px;
+    }
+
+    .submit-area {
+      background: var(--primary-light);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 13px 28px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.92;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 14px;
+      }
+
+      .header,
+      form {
+        padding: 20px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      table {
+        font-size: 13px;
+      }
+
+      th,
+      td {
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Questionnaire de satisfaction TCGA</h1>
+      <p>Saison 2025/2026 – Cours, entraînements et vie du club</p>
+    </header>
+
+    <form>
+      <p class="note">
+        Bonjour, le TCGA souhaite continuer à améliorer ses cours, entraînements et la vie du club.
+        Votre avis est essentiel. Ce questionnaire prend moins de 5 minutes.
+      </p>
+
+      <section>
+        <h2>1. Votre pratique au TCGA</h2>
+
+        <div class="question">
+          <p>Vous êtes :</p>
+          <label><input type="radio" name="profil" /> Adulte</label>
+          <label><input type="radio" name="profil" /> Parent d’un joueur / d’une joueuse</label>
+          <label><input type="radio" name="profil" /> Jeune joueur / joueuse</label>
+        </div>
+
+        <div class="question">
+          <p>Quelle formule suivez-vous ?</p>
+          <label><input type="checkbox" name="formule" /> Cours collectifs adultes</label>
+          <label><input type="checkbox" name="formule" /> École de tennis</label>
+          <label><input type="checkbox" name="formule" /> Cellule compétition</label>
+          <label><input type="checkbox" name="formule" /> Club Ados</label>
+          <label><input type="checkbox" name="formule" /> Baby Tennis</label>
+          <label><input type="checkbox" name="formule" /> Joueur / joueuse en équipe</label>
+          <label><input type="checkbox" name="formule" /> Adhésion jeu libre uniquement</label>
+          <label>Autre : <input type="text" name="formule_autre" /></label>
+        </div>
+
+        <div class="question">
+          <p>Depuis combien de temps êtes-vous au TCGA ?</p>
+          <label><input type="radio" name="anciennete" /> 1ère année</label>
+          <label><input type="radio" name="anciennete" /> 2 à 3 ans</label>
+          <label><input type="radio" name="anciennete" /> Plus de 3 ans</label>
+        </div>
+      </section>
+
+      <section>
+        <h2>2. Satisfaction générale</h2>
+
+        <div class="question">
+          <p>Êtes-vous satisfait(e) de votre expérience au TCGA ?</p>
+          <label><input type="radio" name="satisfaction_generale" /> Très satisfait(e)</label>
+          <label><input type="radio" name="satisfaction_generale" /> Satisfait(e)</label>
+          <label><input type="radio" name="satisfaction_generale" /> Moyennement satisfait(e)</label>
+          <label><input type="radio" name="satisfaction_generale" /> Peu satisfait(e)</label>
+        </div>
+
+        <div class="question">
+          <p>Les horaires proposés vous conviennent-ils ?</p>
+          <label><input type="radio" name="horaires" /> Oui tout à fait</label>
+          <label><input type="radio" name="horaires" /> Plutôt oui</label>
+          <label><input type="radio" name="horaires" /> Plutôt non</label>
+          <label><input type="radio" name="horaires" /> Non</label>
+        </div>
+
+        <div class="question">
+          <p>Le niveau des groupes vous semble-t-il adapté ?</p>
+          <label><input type="radio" name="niveau_groupes" /> Oui parfaitement</label>
+          <label><input type="radio" name="niveau_groupes" /> Plutôt oui</label>
+          <label><input type="radio" name="niveau_groupes" /> Plutôt non</label>
+          <label><input type="radio" name="niveau_groupes" /> Non</label>
+        </div>
+
+        <div class="question">
+          <p>Êtes-vous satisfait(e) de l’équilibre des séances ?</p>
+          <div class="grid">
+            <table>
+              <thead>
+                <tr>
+                  <th>Critère</th>
+                  <th>Très satisfait</th>
+                  <th>Satisfait</th>
+                  <th>Moyen</th>
+                  <th>Insuffisant</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Travail technique</td>
+                  <td><input type="radio" name="technique" /></td>
+                  <td><input type="radio" name="technique" /></td>
+                  <td><input type="radio" name="technique" /></td>
+                  <td><input type="radio" name="technique" /></td>
+                </tr>
+                <tr>
+                  <td>Matchs / points</td>
+                  <td><input type="radio" name="matchs_points" /></td>
+                  <td><input type="radio" name="matchs_points" /></td>
+                  <td><input type="radio" name="matchs_points" /></td>
+                  <td><input type="radio" name="matchs_points" /></td>
+                </tr>
+                <tr>
+                  <td>Physique / intensité</td>
+                  <td><input type="radio" name="physique" /></td>
+                  <td><input type="radio" name="physique" /></td>
+                  <td><input type="radio" name="physique" /></td>
+                  <td><input type="radio" name="physique" /></td>
+                </tr>
+                <tr>
+                  <td>Convivialité</td>
+                  <td><input type="radio" name="convivialite" /></td>
+                  <td><input type="radio" name="convivialite" /></td>
+                  <td><input type="radio" name="convivialite" /></td>
+                  <td><input type="radio" name="convivialite" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>3. Les enseignants et entraîneurs</h2>
+
+        <div class="question">
+          <p>Comment évaluez-vous l’équipe enseignante ?</p>
+          <div class="grid">
+            <table>
+              <thead>
+                <tr>
+                  <th>Critère</th>
+                  <th>Très satisfaisant</th>
+                  <th>Satisfaisant</th>
+                  <th>Moyen</th>
+                  <th>Insuffisant</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Qualité des conseils</td>
+                  <td><input type="radio" name="conseils" /></td>
+                  <td><input type="radio" name="conseils" /></td>
+                  <td><input type="radio" name="conseils" /></td>
+                  <td><input type="radio" name="conseils" /></td>
+                </tr>
+                <tr>
+                  <td>Pédagogie</td>
+                  <td><input type="radio" name="pedagogie" /></td>
+                  <td><input type="radio" name="pedagogie" /></td>
+                  <td><input type="radio" name="pedagogie" /></td>
+                  <td><input type="radio" name="pedagogie" /></td>
+                </tr>
+                <tr>
+                  <td>Motivation / dynamisme</td>
+                  <td><input type="radio" name="dynamisme" /></td>
+                  <td><input type="radio" name="dynamisme" /></td>
+                  <td><input type="radio" name="dynamisme" /></td>
+                  <td><input type="radio" name="dynamisme" /></td>
+                </tr>
+                <tr>
+                  <td>Disponibilité / écoute</td>
+                  <td><input type="radio" name="ecoute" /></td>
+                  <td><input type="radio" name="ecoute" /></td>
+                  <td><input type="radio" name="ecoute" /></td>
+                  <td><input type="radio" name="ecoute" /></td>
+                </tr>
+                <tr>
+                  <td>Ambiance créée pendant les cours</td>
+                  <td><input type="radio" name="ambiance_cours" /></td>
+                  <td><input type="radio" name="ambiance_cours" /></td>
+                  <td><input type="radio" name="ambiance_cours" /></td>
+                  <td><input type="radio" name="ambiance_cours" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="question">
+          <p>Avez-vous le sentiment de progresser grâce aux cours / entraînements ?</p>
+          <label><input type="radio" name="progression" /> Oui beaucoup</label>
+          <label><input type="radio" name="progression" /> Oui un peu</label>
+          <label><input type="radio" name="progression" /> Pas vraiment</label>
+          <label><input type="radio" name="progression" /> Pas du tout</label>
+        </div>
+      </section>
+
+      <section>
+        <h2>4. Infrastructures et organisation</h2>
+
+        <div class="question">
+          <p>Êtes-vous satisfait(e) des installations et de l’organisation ?</p>
+          <div class="grid">
+            <table>
+              <thead>
+                <tr>
+                  <th>Critère</th>
+                  <th>Très satisfait</th>
+                  <th>Satisfait</th>
+                  <th>Moyen</th>
+                  <th>Insuffisant</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Courts couverts Payen</td>
+                  <td><input type="radio" name="payen" /></td>
+                  <td><input type="radio" name="payen" /></td>
+                  <td><input type="radio" name="payen" /></td>
+                  <td><input type="radio" name="payen" /></td>
+                </tr>
+                <tr>
+                  <td>Courts extérieurs Jeannin</td>
+                  <td><input type="radio" name="jeannin" /></td>
+                  <td><input type="radio" name="jeannin" /></td>
+                  <td><input type="radio" name="jeannin" /></td>
+                  <td><input type="radio" name="jeannin" /></td>
+                </tr>
+                <tr>
+                  <td>Réservation des terrains</td>
+                  <td><input type="radio" name="reservation" /></td>
+                  <td><input type="radio" name="reservation" /></td>
+                  <td><input type="radio" name="reservation" /></td>
+                  <td><input type="radio" name="reservation" /></td>
+                </tr>
+                <tr>
+                  <td>Communication du club</td>
+                  <td><input type="radio" name="communication" /></td>
+                  <td><input type="radio" name="communication" /></td>
+                  <td><input type="radio" name="communication" /></td>
+                  <td><input type="radio" name="communication" /></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>5. Vie du club et animations</h2>
+
+        <div class="question">
+          <p>Participez-vous aux animations / événements du club ?</p>
+          <label><input type="radio" name="participation" /> Souvent</label>
+          <label><input type="radio" name="participation" /> Parfois</label>
+          <label><input type="radio" name="participation" /> Rarement</label>
+          <label><input type="radio" name="participation" /> Jamais</label>
+        </div>
+
+        <div class="question">
+          <p>Qu’aimeriez-vous voir davantage au TCGA ?</p>
+          <label><input type="checkbox" name="attentes" /> Matchs libres organisés</label>
+          <label><input type="checkbox" name="attentes" /> Tournois internes</label>
+          <label><input type="checkbox" name="attentes" /> Stages vacances</label>
+          <label><input type="checkbox" name="attentes" /> Animations conviviales</label>
+          <label><input type="checkbox" name="attentes" /> Tennis féminin</label>
+          <label><input type="checkbox" name="attentes" /> Entraînements compétition</label>
+          <label><input type="checkbox" name="attentes" /> Activités jeunes / ados</label>
+          <label><input type="checkbox" name="attentes" /> Padel</label>
+          <label><input type="checkbox" name="attentes" /> Préparation physique</label>
+          <label>Autre : <input type="text" name="attentes_autre" /></label>
+        </div>
+      </section>
+
+      <section>
+        <h2>6. Vos attentes</h2>
+
+        <div class="question">
+          <p>Ce que vous appréciez le plus au TCGA :</p>
+          <textarea name="apprecie_plus"></textarea>
+        </div>
+
+        <div class="question">
+          <p>Ce qui pourrait être amélioré :</p>
+          <textarea name="ameliorations"></textarea>
+        </div>
+
+        <div class="question">
+          <p>Une idée ou suggestion pour le club ?</p>
+          <textarea name="suggestions"></textarea>
+        </div>
+      </section>
+
+      <section>
+        <h2>7. Recommandation</h2>
+
+        <div class="question">
+          <p>Recommanderiez-vous le TCGA à un proche ?</p>
+          <label><input type="radio" name="recommandation" /> Oui sans hésiter</label>
+          <label><input type="radio" name="recommandation" /> Oui probablement</label>
+          <label><input type="radio" name="recommandation" /> Peut-être</label>
+          <label><input type="radio" name="recommandation" /> Probablement pas</label>
+          <label><input type="radio" name="recommandation" /> Non</label>
+        </div>
+      </section>
+
+      <div class="submit-area">
+        <p><strong>Merci pour votre participation !</strong></p>
+        <button type="submit">Envoyer mes réponses</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
